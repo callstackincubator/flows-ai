@@ -85,13 +85,12 @@ const graph = {
     {
       from: 'userInputAgent',
       to: 'githubAgent',
-      instruction:
-        'Go to Github and get the top 3 most popular issues. Return the top 3 most popular issues.',
+      instruction: 'Go to Github and get the top 3 most popular issues and number of open issues.',
     },
     {
       from: 'githubAgent',
       to: 'communicationAgent',
-      condition: 'There are more than 1000 issues',
+      condition: 'There are more than 10001 open issues',
       instruction:
         'Inform the maintainer of the project about the issue with the project, highlight top 3 most popular issues. Return confirmation that the message was sent.',
     },

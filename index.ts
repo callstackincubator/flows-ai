@@ -60,15 +60,13 @@ async function executeNode(graph: Graph, nodeId: string, prompt: string): Promis
       You are an agent scheduler and executor.
       You are given an instruction, context, condition and a tool.
 
-      You must call the tool only if the condition is met.
       You must prepare tool arguments based on the instruction and context.
+      Only call the tool if the condition is met.
     `,
     prompt,
     // tbd: maxSteps
     maxSteps: 10,
     tools: {
-      // tbd: use `node` description field as `condition` when to call the tool,
-      // do it once for all nodes to maximize parallelism
       [nodeId]: node,
       // tbd: error tool - avoid hallucinations if can't complete request (e.g. missing data in context)
       // tbd: tool choice required then?
@@ -81,7 +79,13 @@ async function executeNode(graph: Graph, nodeId: string, prompt: string): Promis
 
   // Recursively execute all children
   await Promise.all(
-    edges.map((edge) => executeNode(graph, edge.to, `${result.text} ${edge.instruction}`))
+    edges.map((edge) =>
+      executeNode(
+        graph,
+        edge.to,
+        `Here is result: ${result.text}. Here is the instruction: ${edge.instruction}. Here is the condition: ${edge.condition}`
+      )
+    )
   )
 }
 
