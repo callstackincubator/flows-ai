@@ -1,5 +1,4 @@
 import { openai } from '@ai-sdk/openai'
-import { text } from '@clack/prompts'
 import { tool } from 'ai'
 import z from 'zod'
 
@@ -68,7 +67,8 @@ const userInputAgent = agent({
       parameters: z.object({
         message: z.string().describe('The question to ask the user'),
       }),
-      execute: ({ message }) => {
+      execute: async ({ message }) => {
+        const { text } = await import('@clack/prompts')
         return text({
           message,
         })
@@ -77,10 +77,12 @@ const userInputAgent = agent({
   },
 })
 
-// Alternative name:
-// flow, agents, pipeline
-const graph = {
-  nodes: { githubAgent, communicationAgent, userInputAgent },
+/**
+ * We operate on graphs, since it's easier to visualize and understand.
+ */
+export const graph = {
+  nodes: { userInputAgent, githubAgent, communicationAgent },
+  root: 'userInputAgent',
   edges: [
     {
       from: 'userInputAgent',
@@ -94,8 +96,14 @@ const graph = {
       instruction:
         'Inform the maintainer of the project about the issue with the project, highlight top 3 most popular issues. Return confirmation that the message was sent.',
     },
+    {
+      from: 'githubAgent',
+      to: 'communicationAgent',
+      condition: 'There are less than 500 open issues',
+      instruction:
+        'Inform the maintainer that he is doing good job. Return confirmation that the message was sent.',
+    },
   ],
-  root: 'userInputAgent',
 }
 
 run(graph, 'Get a valid Github project name in format "organization/project"')
