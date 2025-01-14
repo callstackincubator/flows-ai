@@ -5,6 +5,9 @@ import z from 'zod'
 
 import { run } from '../index.js'
 
+// https://sdk.vercel.ai/docs/ai-sdk-core/agents
+// We're using `tool-as-agent` per Vercel AI SDK
+
 const communicationAgent = tool({
   parameters: z.object({
     receipient: z.discriminatedUnion('type', [
@@ -22,20 +25,12 @@ const communicationAgent = tool({
   execute: async (input) => {
     return generateText({
       model: openai('gpt-4o-mini'),
-      messages: [
-        {
-          role: 'system',
-          content: `
-            You are a communication agent.
-            You need to send a message to the given receipient.
-            You can send an email or a Slack message.
-          `,
-        },
-        {
-          role: 'user',
-          content: JSON.stringify(input),
-        },
-      ],
+      system: `
+        You are a communication agent.
+        You need to send a message to the given receipient.
+        You can send an email or a Slack message.
+      `,
+      prompt: JSON.stringify(input),
     })
   },
 })
@@ -51,20 +46,12 @@ const githubAgent = tool({
   execute: async (input: { github_project_name: string; instruction: string }) => {
     return generateText({
       model: openai('gpt-4o-mini'),
-      messages: [
-        {
-          role: 'system',
-          content: `
-            You are a Github agent.
-            You are given a Github project name and an instruction to perform.
-            You need to perform the instruction and return the result.
-          `,
-        },
-        {
-          role: 'user',
-          content: JSON.stringify(input),
-        },
-      ],
+      system: `
+        You are a Github agent.
+        You are given a Github project name and an instruction to perform.
+        You need to perform the instruction and return the result.
+      `,
+      prompt: JSON.stringify(input),
       // tools: [githubApi]
     })
   },
@@ -78,14 +65,9 @@ const userInputAgent = tool({
   execute: async (input: string) => {
     return generateText({
       model: openai('gpt-4o-mini'),
-      messages: [
-        {
-          role: 'system',
-          content:
-            'You are a user input agent. You are given a prompt and you need to return the user input.',
-        },
-        { role: 'user', content: input },
-      ],
+      system:
+        'You are a user input agent. You are given a prompt and you need to return the user input.',
+      prompt: input,
       tools: {
         askQuestion: tool({
           parameters: z.string().describe('The question to ask the user'),
