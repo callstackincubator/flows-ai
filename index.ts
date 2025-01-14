@@ -75,6 +75,7 @@ async function executeNode(graph: Graph, nodeId: string, prompt: string): Promis
 
   console.log(`Result for node ${nodeId}:`, result.text)
 
+  // tbd: do not continue further if the condition was not met
   const edges = graph.edges.filter((edge) => edge.from === nodeId)
 
   // Recursively execute all children

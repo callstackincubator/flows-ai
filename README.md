@@ -1,15 +1,22 @@
 # dead-simple-ai-orchestrator
 
-To install dependencies:
+Assumptions:
 
-```bash
-bun install
-```
+- Do not introduce new abstraction / framework 
+- Use Vercel AI SDK
+- Use Vercel AI SDK `tool` as a base abstraction 
+- Organize tools on a graph (easier to visualize with 3rd party tools too)
 
-To run:
+Design:
 
-```bash
-bun run index.ts
-```
+- Each node is a tool (tool can be a function, or a tool from Vercel AI SDK, or LLM call etc.)
+- Nodes are connected by edges
+- Each edge has a condition (when to run), and an instruction (what to run)
+- We provide `agent` function that combines `generateText` and `tool` from Vercel AI SDK
 
-This project was created using `bun init` in bun v1.1.38. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+Runtime:
+
+- Each edge is evaluated by an LLM to determine if it should be run
+- If an edge is run, the tool associated with it gets executed
+- Edge condition and input is determined by the LLM based on past execution
+
