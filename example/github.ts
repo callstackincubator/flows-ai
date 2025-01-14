@@ -1,3 +1,4 @@
+import { openai } from '@ai-sdk/openai'
 import { text } from '@clack/prompts'
 import { tool } from 'ai'
 import z from 'zod'
@@ -8,31 +9,33 @@ import { agent, run } from '../index.js'
 // We're using `tool-as-agent` per Vercel AI SDK
 
 const communicationAgent = agent({
-  parameters: z.object({
-    receipient: z.discriminatedUnion('type', [
-      z.object({
-        type: z.literal('email'),
-        email: z.string().describe('The email address to send the message to'),
-      }),
-      z.object({
-        type: z.literal('slack'),
-        slack_channel: z.string().describe('The Slack channel to send the message to'),
-      }),
-    ]),
-    message: z.string().describe('The message to send'),
-  }),
+  model: openai('gpt-4o'),
+  input: z.string().describe('The email address to send the message to'),
   system: `
     You are a communication agent.
     You need to send a message to the given receipient.
-    You can send an email or a Slack message.
+
+    For project maintainers, you send emails to: "opensource@callstack.com".
   `,
+  tools: {
+    sendEmail: tool({
+      parameters: z.object({
+        message: z.string().describe('The message to send'),
+        to: z.string().describe('The email address to send the message to'),
+      }),
+      execute: async ({ message, to }) => {
+        return `Email sent: ${message} to ${to}`
+      },
+    }),
+  },
 })
 
 /**
  * This agent takes a Github project name as input and task to perform.
  */
 const githubAgent = agent({
-  parameters: z.object({
+  model: openai('gpt-4o-mini'),
+  input: z.object({
     github_project_name: z.string().describe('The name of the Github project'),
     instruction: z.string().describe('The instruction to perform'),
   }),
@@ -47,7 +50,7 @@ const githubAgent = agent({
         url: z.string().describe('The url to scrape'),
       }),
       execute: async () => {
-        return `<html><div>Open issues: 10000</div></html>`
+        return `<html><div>Open issues: 10000</div>, Top 3 issues: <ul><li>Issue 1</li><li>Issue 2</li><li>Issue 3</li></ul></html>`
       },
     }),
   },
@@ -57,9 +60,8 @@ const githubAgent = agent({
  * This agent takes simple text as input
  */
 const userInputAgent = agent({
-  parameters: z.object({
-    prompt: z.string().describe('The prompt to ask the user'),
-  }),
+  model: openai('gpt-4o-mini'),
+  input: z.string().describe('The question to ask the user'),
   system: 'You are given a prompt and you need to return the user input.',
   tools: {
     askQuestion: tool({

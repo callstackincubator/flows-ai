@@ -1,6 +1,7 @@
 import { openai } from '@ai-sdk/openai'
 import { generateText, tool } from 'ai'
 import { CoreTool } from 'ai'
+import { z } from 'zod'
 
 type Edge = {
   from: string
@@ -15,13 +16,31 @@ type Graph = {
   root: string
 }
 
-export function agent({ parameters, model = openai('gpt-4o-mini'), maxSteps = 10, ...rest }: any) {
+/**
+ * Agent is a `generateText` wrapped inside a `tool` for compatibility with Vercel AI SDK.
+ *
+ * Differences:
+ * - It sets `maxSteps` to 10 by default to give space for processing tool results
+ * - It allows to pass `input` as a string
+ * - It also converts response to string
+ */
+export function agent({
+  input,
+  maxSteps = 10,
+  ...rest
+}: {
+  input: z.ZodString | z.ZodObject<any>
+} & Parameters<typeof generateText>[0]) {
   return tool({
-    parameters,
+    parameters:
+      input instanceof z.ZodString
+        ? z.object({
+            input,
+          })
+        : input,
     execute: async (prompt) => {
       const response = await generateText({
         ...rest,
-        model,
         maxSteps,
         prompt: JSON.stringify(prompt),
       })
