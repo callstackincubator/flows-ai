@@ -1,20 +1,52 @@
+import { openai } from '@ai-sdk/openai'
+import { generateText } from 'ai'
 import { CoreTool } from 'ai'
 
 type Edge = {
-  from: CoreTool
-  to: CoreTool
+  from: string
+  to: string
   instruction: string
   condition?: string
 }
 
 type Graph = {
-  nodes: CoreTool[]
+  nodes: Record<string, CoreTool>
   edges: Edge[]
-  root: CoreTool
+  root: string
 }
 
-// Runner should execute prompt on root, then traverse edges
-// It should take the output from previous node, check for condition and pass parameters to the agent based on the instruction.
-export function run(graph: Graph, prompt: string) {
-  console.log(graph, prompt)
+export async function run(graph: Graph, prompt: string) {
+  /**
+   * Execute the root node
+   */
+  const result = await generateText({
+    model: openai('gpt-4o-mini'),
+    prompt,
+    tools: {
+      [graph.root]: graph.nodes[graph.root],
+    },
+    // toolChoice: 'required',
+  })
+
+  console.log(result)
+
+  const visited = new Set<CoreTool>()
+  const queue: CoreTool[] = []
+
+  while (queue.length > 0) {
+    const currentNode = queue.shift()
+    if (!currentNode || visited.has(currentNode)) {
+      continue
+    }
+
+    // // Generate text using the edge's instruction
+    // const generatedPrompt = await generateText({
+    //   model: openai('gpt-4o-mini'),
+    //   prompt,
+    //   tools: [currentNode],
+    // })
+    console.log(currentNode)
+
+    visited.add(currentNode)
+  }
 }

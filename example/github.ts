@@ -61,8 +61,10 @@ const githubAgent = tool({
  * This agent takes simple text as input
  */
 const userInputAgent = tool({
-  parameters: z.string().describe('The question to ask the user'),
-  execute: async (prompt: string) => {
+  parameters: z.object({
+    prompt: z.string().describe('The prompt to ask the user'),
+  }),
+  execute: async ({ prompt }) => {
     return generateText({
       model: openai('gpt-4o-mini'),
       system:
@@ -70,8 +72,10 @@ const userInputAgent = tool({
       prompt,
       tools: {
         askQuestion: tool({
-          parameters: z.string().describe('The question to ask the user'),
-          execute: async (message) => {
+          parameters: z.object({
+            message: z.string().describe('The question to ask the user'),
+          }),
+          execute: async ({ message }) => {
             return text({
               message,
             })
@@ -100,23 +104,23 @@ const userInputAgent = tool({
 // Alternative name:
 // flow, agents, pipeline
 const graph = {
-  nodes: [githubAgent, communicationAgent, userInputAgent],
+  nodes: { githubAgent, communicationAgent, userInputAgent },
   edges: [
     {
-      from: userInputAgent,
-      to: githubAgent,
+      from: 'userInputAgent',
+      to: 'githubAgent',
       instruction:
         'Go to Github and get the top 3 most popular issues. Return the top 3 most popular issues.',
     },
     {
-      from: githubAgent,
-      to: communicationAgent,
+      from: 'githubAgent',
+      to: 'communicationAgent',
       condition: 'There are more than 1000 issues',
       instruction:
         'Inform the maintainer of the project about the issue with the project, highlight top 3 most popular issues. Return confirmation that the message was sent.',
     },
   ],
-  root: userInputAgent,
+  root: 'userInputAgent',
 }
 
 run(
