@@ -1,4 +1,5 @@
 import { openai } from '@ai-sdk/openai'
+import { select, text } from '@clack/prompts'
 import { generateText, tool } from 'ai'
 import z from 'zod'
 
@@ -88,14 +89,25 @@ const userInputAgent = tool({
       tools: {
         askQuestion: tool({
           parameters: z.string().describe('The question to ask the user'),
-          execute: async (input: string) => {
-            return input
+          execute: async (message) => {
+            return text({
+              message,
+            })
           },
         }),
-        selectOption: tool({
-          parameters: z.string().describe('The option to select'),
-          execute: async (input: string) => {
-            return input
+        selectFromOption: tool({
+          parameters: z.object({
+            options: z.array(z.string()).describe('The options to select from'),
+            message: z.string().describe('The question to ask the user'),
+          }),
+          execute: async ({ options, message }) => {
+            return select({
+              message,
+              options: options.map((option) => ({
+                value: option,
+                label: option,
+              })),
+            })
           },
         }),
       },
