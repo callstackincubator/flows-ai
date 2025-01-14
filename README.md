@@ -20,3 +20,6 @@ Runtime:
 - If an edge is run, the tool associated with it gets executed
 - Edge condition and input is determined by the LLM based on past execution
 
+tbd:
+- parallel execution
+- wait for all 
