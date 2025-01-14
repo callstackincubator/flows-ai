@@ -1,5 +1,5 @@
 import { openai } from '@ai-sdk/openai'
-import { generateText } from 'ai'
+import { generateText, tool } from 'ai'
 import { CoreTool } from 'ai'
 
 type Edge = {
@@ -15,38 +15,58 @@ type Graph = {
   root: string
 }
 
-export async function run(graph: Graph, prompt: string) {
-  /**
-   * Execute the root node
-   */
+export function agent({ parameters, model = openai('gpt-4o-mini'), maxSteps = 10, ...rest }: any) {
+  return tool({
+    parameters,
+    execute: async (prompt) => {
+      const response = await generateText({
+        ...rest,
+        model,
+        maxSteps,
+        prompt: JSON.stringify(prompt),
+      })
+      return response.text
+    },
+  })
+}
+
+// DO NOT USE THIS IN PRODUCTION
+// BROKEN AND VERY EXPERIMENTAL NODE TRAVERSAL
+
+async function executeNode(graph: Graph, nodeId: string, prompt: string): Promise<void> {
+  const node = graph.nodes[nodeId]
   const result = await generateText({
     model: openai('gpt-4o-mini'),
+    system: `
+      You are an agent scheduler and executor.
+      You are given an instruction, context, condition and a tool.
+
+      You must call the tool only if the condition is met.
+      You must prepare tool arguments based on the instruction and context.
+    `,
     prompt,
+    // tbd: maxSteps
+    maxSteps: 10,
     tools: {
-      [graph.root]: graph.nodes[graph.root],
+      // tbd: use `node` description field as `condition` when to call the tool,
+      // do it once for all nodes to maximize parallelism
+      [nodeId]: node,
+      // tbd: error tool - avoid hallucinations if can't complete request (e.g. missing data in context)
+      // tbd: tool choice required then?
     },
-    // toolChoice: 'required',
   })
 
-  console.log(result)
+  console.log(`Result for node ${nodeId}:`, result.text)
 
-  const visited = new Set<CoreTool>()
-  const queue: CoreTool[] = []
+  const edges = graph.edges.filter((edge) => edge.from === nodeId)
 
-  while (queue.length > 0) {
-    const currentNode = queue.shift()
-    if (!currentNode || visited.has(currentNode)) {
-      continue
-    }
+  // Recursively execute all children
+  await Promise.all(
+    edges.map((edge) => executeNode(graph, edge.to, `${result.text} ${edge.instruction}`))
+  )
+}
 
-    // // Generate text using the edge's instruction
-    // const generatedPrompt = await generateText({
-    //   model: openai('gpt-4o-mini'),
-    //   prompt,
-    //   tools: [currentNode],
-    // })
-    console.log(currentNode)
-
-    visited.add(currentNode)
-  }
+export async function run(graph: Graph, prompt: string) {
+  // Start execution from the root node
+  await executeNode(graph, graph.root, prompt)
 }

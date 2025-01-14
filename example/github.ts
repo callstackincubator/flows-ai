@@ -1,14 +1,13 @@
-import { openai } from '@ai-sdk/openai'
-import { select, text } from '@clack/prompts'
-import { generateText, tool } from 'ai'
+import { text } from '@clack/prompts'
+import { tool } from 'ai'
 import z from 'zod'
 
-import { run } from '../index.js'
+import { agent, run } from '../index.js'
 
 // https://sdk.vercel.ai/docs/ai-sdk-core/agents
 // We're using `tool-as-agent` per Vercel AI SDK
 
-const communicationAgent = tool({
+const communicationAgent = agent({
   parameters: z.object({
     receipient: z.discriminatedUnion('type', [
       z.object({
@@ -22,82 +21,57 @@ const communicationAgent = tool({
     ]),
     message: z.string().describe('The message to send'),
   }),
-  execute: async (prompt) => {
-    return generateText({
-      model: openai('gpt-4o-mini'),
-      system: `
-        You are a communication agent.
-        You need to send a message to the given receipient.
-        You can send an email or a Slack message.
-      `,
-      prompt: JSON.stringify(prompt),
-    })
-  },
+  system: `
+    You are a communication agent.
+    You need to send a message to the given receipient.
+    You can send an email or a Slack message.
+  `,
 })
 
 /**
  * This agent takes a Github project name as input and task to perform.
  */
-const githubAgent = tool({
+const githubAgent = agent({
   parameters: z.object({
     github_project_name: z.string().describe('The name of the Github project'),
     instruction: z.string().describe('The instruction to perform'),
   }),
-  execute: async (prompt) => {
-    return generateText({
-      model: openai('gpt-4o-mini'),
-      system: `
-        You are a Github agent.
-        You are given a Github project name and an instruction to perform.
-        You need to perform the instruction and return the result.
-      `,
-      prompt: JSON.stringify(prompt),
-      // tools: [githubApi]
-    })
+  system: `
+    You are a Github agent.
+    You are given a Github project name and an instruction to perform.
+    You will scrape the data from Github and return the result.
+  `,
+  tools: {
+    scrapeTool: tool({
+      parameters: z.object({
+        url: z.string().describe('The url to scrape'),
+      }),
+      execute: async () => {
+        return `<html><div>Open issues: 10000</div></html>`
+      },
+    }),
   },
 })
 
 /**
  * This agent takes simple text as input
  */
-const userInputAgent = tool({
+const userInputAgent = agent({
   parameters: z.object({
     prompt: z.string().describe('The prompt to ask the user'),
   }),
-  execute: async ({ prompt }) => {
-    return generateText({
-      model: openai('gpt-4o-mini'),
-      system:
-        'You are a user input agent. You are given a prompt and you need to return the user input.',
-      prompt,
-      tools: {
-        askQuestion: tool({
-          parameters: z.object({
-            message: z.string().describe('The question to ask the user'),
-          }),
-          execute: async ({ message }) => {
-            return text({
-              message,
-            })
-          },
-        }),
-        selectFromOption: tool({
-          parameters: z.object({
-            options: z.array(z.string()).describe('The options to select from'),
-            message: z.string().describe('The question to ask the user'),
-          }),
-          execute: async ({ options, message }) => {
-            return select({
-              message,
-              options: options.map((option) => ({
-                value: option,
-                label: option,
-              })),
-            })
-          },
-        }),
+  system: 'You are given a prompt and you need to return the user input.',
+  tools: {
+    askQuestion: tool({
+      parameters: z.object({
+        message: z.string().describe('The question to ask the user'),
+      }),
+      execute: ({ message }) => {
+        return text({
+          message,
+        })
       },
-    })
+    }),
   },
 })
 
@@ -123,7 +97,4 @@ const graph = {
   root: 'userInputAgent',
 }
 
-run(
-  graph,
-  'Ask user what project they want to check. User must provide a valid Github project name and organization'
-)
+run(graph, 'Get a valid Github project name in format "organization/project"')
