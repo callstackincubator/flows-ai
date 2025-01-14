@@ -22,7 +22,7 @@ const communicationAgent = tool({
     ]),
     message: z.string().describe('The message to send'),
   }),
-  execute: async (input) => {
+  execute: async (prompt) => {
     return generateText({
       model: openai('gpt-4o-mini'),
       system: `
@@ -30,7 +30,7 @@ const communicationAgent = tool({
         You need to send a message to the given receipient.
         You can send an email or a Slack message.
       `,
-      prompt: JSON.stringify(input),
+      prompt: JSON.stringify(prompt),
     })
   },
 })
@@ -43,7 +43,7 @@ const githubAgent = tool({
     github_project_name: z.string().describe('The name of the Github project'),
     instruction: z.string().describe('The instruction to perform'),
   }),
-  execute: async (input: { github_project_name: string; instruction: string }) => {
+  execute: async (prompt) => {
     return generateText({
       model: openai('gpt-4o-mini'),
       system: `
@@ -51,7 +51,7 @@ const githubAgent = tool({
         You are given a Github project name and an instruction to perform.
         You need to perform the instruction and return the result.
       `,
-      prompt: JSON.stringify(input),
+      prompt: JSON.stringify(prompt),
       // tools: [githubApi]
     })
   },
@@ -62,12 +62,12 @@ const githubAgent = tool({
  */
 const userInputAgent = tool({
   parameters: z.string().describe('The question to ask the user'),
-  execute: async (input: string) => {
+  execute: async (prompt: string) => {
     return generateText({
       model: openai('gpt-4o-mini'),
       system:
         'You are a user input agent. You are given a prompt and you need to return the user input.',
-      prompt: input,
+      prompt,
       tools: {
         askQuestion: tool({
           parameters: z.string().describe('The question to ask the user'),
