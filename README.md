@@ -7,3 +7,8 @@
 - Each agent defines "payload" it needs at each level to execute.
 
 - You can use built-in control flow agents, or bring your own.
+
+## TODO
+
+- Types for each agent payload
+- Logger for each step
