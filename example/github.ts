@@ -1,5 +1,5 @@
 import { openai } from '@ai-sdk/openai'
-import { tool } from 'ai'
+import { CoreTool, generateText, tool } from 'ai'
 import z from 'zod'
 
 import { agent, run } from '../index.js'
@@ -77,33 +77,57 @@ const userInputAgent = agent({
   },
 })
 
-/**
- * We operate on graphs, since it's easier to visualize and understand.
- */
-export const graph = {
-  nodes: { userInputAgent, githubAgent, communicationAgent },
-  root: 'userInputAgent',
-  edges: [
+function oneOf({ when, tasks }: { when: string; tasks: any[] }) {
+  return {
+    agent: 'oneOfAgent',
+    when,
+    tasks,
+  }
+}
+
+// tbd: figure better structure with tools so we can have mutliple routers
+const githubProjectHealthAnalysis = {
+  agents: {
+    userInputAgent,
+    githubAgent,
+    communicationAgent,
+  },
+  tasks: [
     {
-      from: 'userInputAgent',
-      to: 'githubAgent',
+      agent: 'userInputAgent',
+      instruction: 'Get a valid Github project name in format "organization/project"',
+    },
+    {
+      agent: 'githubAgent',
       instruction: 'Go to Github and get the top 3 most popular issues and number of open issues.',
     },
+    // in higher-order code by users, there won't be this structure,
+    // but something such as `oneOf(taskA, taskB)`, so we will improve this sturcture
     {
-      from: 'githubAgent',
-      to: 'communicationAgent',
-      condition: 'There are more than 10001 open issues',
-      instruction:
-        'Inform the maintainer of the project about the issue with the project, highlight top 3 most popular issues. Return confirmation that the message was sent.',
-    },
-    {
-      from: 'githubAgent',
-      to: 'communicationAgent',
-      condition: 'There are less than 500 open issues',
-      instruction:
-        'Inform the maintainer that he is doing good job. Return confirmation that the message was sent.',
+      agent: 'oneOfAgent',
+      tasks: [
+        {
+          when: 'There are more than 10001 open issues',
+          tasks: [
+            {
+              agent: 'communicationAgent',
+              instruction: 'Inform the maintainer of the project about the issue with the project.',
+            },
+          ],
+        },
+        {
+          when: 'There are less than 10001 open issues',
+          tasks: [
+            {
+              agent: 'communicationAgent',
+              instruction: 'Inform the maintainer that he is doing good job.',
+            },
+          ],
+        },
+      ],
     },
   ],
 }
 
-run(graph, 'Get a valid Github project name in format "organization/project"')
+// currently does not work
+// run(githubProjectHealthAnalysis)
