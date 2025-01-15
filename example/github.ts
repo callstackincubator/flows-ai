@@ -2,7 +2,8 @@ import { openai } from '@ai-sdk/openai'
 import { tool } from 'ai'
 import z from 'zod'
 
-import { agent, run } from '../index.js'
+import { run } from '../index.js'
+import { agent, flow } from '../index.js'
 
 // https://sdk.vercel.ai/docs/ai-sdk-core/agents
 // We're using `tool-as-agent` per Vercel AI SDK
@@ -83,41 +84,49 @@ const githubProjectHealthAnalysisFlow = {
       payload: 'Go to Github and get the top 3 most popular issues and number of open issues.',
     },
     {
-      agent: 'oneOfAgent',
-      payload: [
-        {
-          agent: 'communicationAgent',
-          payload: 'Inform the maintainer of the project about the issue with the project.',
-          when: 'There are more than 10001 open issues',
-        },
-        {
-          agent: 'communicationAgent',
-          payload: 'Inform the maintainer that he is doing good job.',
-          when: 'There are less than 10001 open issues',
-        },
-      ],
-    },
-    {
-      agent: 'parallelAgent',
-      payload: [
-        {
-          agent: 'communicationAgent',
-          payload:
-            'Write an email to the maintainer of the project about the issue with the project.',
-        },
-        {
-          agent: 'communicationAgent',
-          payload: 'Inform the maintainer that he is doing good job.',
-        },
-      ],
+      agent: 'forEachAgent',
+      step: 'Each step is a Github issue and total number of open issues',
+      payload: {
+        agent: 'parallelAgent',
+        payload: [
+          {
+            agent: 'oneOfAgent',
+            payload: [
+              {
+                agent: 'communicationAgent',
+                payload: 'Write an email to the maintainer saying he is behind schedule.',
+                when: 'There are more than 500 open issues',
+              },
+              {
+                agent: 'communicationAgent',
+                payload: 'Inform the maintainer that he is doing good job.',
+                when: 'There are less than 500 open issues',
+              },
+            ],
+          },
+          {
+            agent: 'communicationAgent',
+            payload: 'Inform the maintainer about open issue.',
+          },
+        ],
+      },
     },
   ],
 }
 
-const response = await run(githubProjectHealthAnalysisFlow, {
+/**
+ * In order to run the flow, we must first construct it out of the definition,
+ * and provide all the agents.
+ */
+const f = flow(githubProjectHealthAnalysisFlow, {
   userInputAgent,
   githubAgent,
   communicationAgent,
 })
+
+/**
+ * In this particular example, the flow takes no input argument (gets it from the user)
+ */
+const response = await run(f, '')
 
 console.log('response', response)
