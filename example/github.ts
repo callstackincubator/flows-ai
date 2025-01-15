@@ -85,7 +85,7 @@ const githubProjectHealthAnalysisFlow = {
     },
     {
       agent: 'forEachAgent',
-      step: 'Each step is a Github issue and total number of open issues',
+      forEach: 'Github issue and total number of open issues',
       payload: {
         agent: 'parallelAgent',
         payload: [

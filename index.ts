@@ -232,13 +232,13 @@ const bestOfAllAgent = async ({ payload, criteria }: BestOfAllAgentInput, contex
 
 type ForEachAgentInput = {
   payload: Flow
-  step: string
+  forEach: string
 }
 
 /**
  * Use this agent to implement workflow where you need to loop over a list of steps.
  */
-const forEachAgent = async ({ payload, step }: ForEachAgentInput, context: string) => {
+const forEachAgent = async ({ payload, forEach }: ForEachAgentInput, context: string) => {
   const response = await generateObject({
     model: openai('gpt-4o-mini'),
     system: `
@@ -248,7 +248,7 @@ const forEachAgent = async ({ payload, step }: ForEachAgentInput, context: strin
     `,
     prompt: `
       Here is the context: ${JSON.stringify(context)}
-      Here is the step description: ${JSON.stringify(step)}
+      Here is the step description: ${forEach}
     `,
     schema: z.object({
       steps: z.array(z.string()).describe('The steps to be executed.'),
