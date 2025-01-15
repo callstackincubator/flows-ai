@@ -1,5 +1,5 @@
 import { openai } from '@ai-sdk/openai'
-import { CoreTool, generateText, tool } from 'ai'
+import { tool } from 'ai'
 import z from 'zod'
 
 import { agent, run } from '../index.js'
@@ -9,7 +9,6 @@ import { agent, run } from '../index.js'
 
 const communicationAgent = agent({
   model: openai('gpt-4o'),
-  input: z.string().describe('The email address to send the message to'),
   system: `
     You are a communication agent.
     You need to send a message to the given receipient.
@@ -34,10 +33,6 @@ const communicationAgent = agent({
  */
 const githubAgent = agent({
   model: openai('gpt-4o-mini'),
-  input: z.object({
-    github_project_name: z.string().describe('The name of the Github project'),
-    instruction: z.string().describe('The instruction to perform'),
-  }),
   system: `
     You are a Github agent.
     You are given a Github project name and an instruction to perform.
@@ -60,7 +55,6 @@ const githubAgent = agent({
  */
 const userInputAgent = agent({
   model: openai('gpt-4o-mini'),
-  input: z.string().describe('The question to ask the user'),
   system: 'You are given a prompt and you need to return the user input.',
   tools: {
     askQuestion: tool({
@@ -77,57 +71,53 @@ const userInputAgent = agent({
   },
 })
 
-function oneOf({ when, tasks }: { when: string; tasks: any[] }) {
-  return {
-    agent: 'oneOfAgent',
-    when,
-    tasks,
-  }
-}
-
-// tbd: figure better structure with tools so we can have mutliple routers
-const githubProjectHealthAnalysis = {
-  agents: {
-    userInputAgent,
-    githubAgent,
-    communicationAgent,
-  },
-  tasks: [
+const githubProjectHealthAnalysisFlow = {
+  agent: 'sequenceAgent',
+  payload: [
     {
       agent: 'userInputAgent',
-      instruction: 'Get a valid Github project name in format "organization/project"',
+      payload: 'Get a valid Github project name in format "organization/project"',
     },
     {
       agent: 'githubAgent',
-      instruction: 'Go to Github and get the top 3 most popular issues and number of open issues.',
+      payload: 'Go to Github and get the top 3 most popular issues and number of open issues.',
     },
-    // in higher-order code by users, there won't be this structure,
-    // but something such as `oneOf(taskA, taskB)`, so we will improve this sturcture
     {
       agent: 'oneOfAgent',
-      tasks: [
+      payload: [
         {
+          agent: 'communicationAgent',
+          payload: 'Inform the maintainer of the project about the issue with the project.',
           when: 'There are more than 10001 open issues',
-          tasks: [
-            {
-              agent: 'communicationAgent',
-              instruction: 'Inform the maintainer of the project about the issue with the project.',
-            },
-          ],
         },
         {
+          agent: 'communicationAgent',
+          payload: 'Inform the maintainer that he is doing good job.',
           when: 'There are less than 10001 open issues',
-          tasks: [
-            {
-              agent: 'communicationAgent',
-              instruction: 'Inform the maintainer that he is doing good job.',
-            },
-          ],
+        },
+      ],
+    },
+    {
+      agent: 'parallelAgent',
+      payload: [
+        {
+          agent: 'communicationAgent',
+          payload:
+            'Write an email to the maintainer of the project about the issue with the project.',
+        },
+        {
+          agent: 'communicationAgent',
+          payload: 'Inform the maintainer that he is doing good job.',
         },
       ],
     },
   ],
 }
 
-// currently does not work
-// run(githubProjectHealthAnalysis)
+const response = await run(githubProjectHealthAnalysisFlow, {
+  userInputAgent,
+  githubAgent,
+  communicationAgent,
+})
+
+console.log('response', response)
