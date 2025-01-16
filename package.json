@@ -69,7 +69,7 @@
       "commitMessage": "chore: release ${version}",
       "tagName": "v${version}"
     },
-    "npm": true,
+    "npm": false,
     "github": {
       "release": true
     }
