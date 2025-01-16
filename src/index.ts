@@ -3,7 +3,7 @@ import { generateObject, generateText } from 'ai'
 import { z } from 'zod'
 
 // tbd: return type
-type Agent<T = any> = (prompt: T, context: string) => Promise<any>
+export type Agent<T = any> = (prompt: T, context: string) => Promise<any>
 
 /**
  * On a high-level, Flow is a very simple structure.
@@ -73,7 +73,7 @@ function hydrate(definition: FlowDefinition<string>, agents: Record<string, Agen
   }
 }
 
-function run({ agent, ...input }: Flow, context: string) {
+export function run({ agent, ...input }: Flow, context: string) {
   return agent(input, context)
 }
 
