@@ -4,9 +4,6 @@ import z from 'zod'
 
 import { agent, execute } from '../index.js'
 
-// https://sdk.vercel.ai/docs/ai-sdk-core/agents
-// We're using `tool-as-agent` per Vercel AI SDK
-
 const communicationAgent = agent({
   model: openai('gpt-4o'),
   system: `

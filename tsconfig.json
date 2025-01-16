@@ -11,5 +11,6 @@
     "outDir": "dist",
     "resolveJsonModule": true,
     "customConditions": ["bun"]
-  }
+  },
+  "include": ["./src"]
 }

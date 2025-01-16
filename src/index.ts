@@ -83,6 +83,7 @@ type UserDefinedAgentPayload = {
 
 /**
  * Helper function to create a user-defined agent that can then be referneced in a flow.
+ * Like `generateText` in Vercel AI SDK, but we're taking care of `prompt`.
  */
 export function agent({
   maxSteps = 10,
