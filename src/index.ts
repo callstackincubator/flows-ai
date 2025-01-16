@@ -152,7 +152,7 @@ const oneOfAgent: Agent<OneOfAgentPayload> = async ({ input }, context) => {
     schema: z.object({
       index: z
         .number()
-        .describe('The index of the condition that is true, or -1 if no condition is true.'),
+        .describe('The index of the condition that is met, or -1 if no condition was met.'),
     }),
   })
   const index = condition.object.index
