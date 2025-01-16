@@ -150,7 +150,9 @@ const oneOfAgent: Agent<OneOfAgentPayload> = async ({ input }, context) => {
       Here is the array of conditions: ${JSON.stringify(input.map((p) => p.when))}
     `,
     schema: z.object({
-      index: z.number().describe('The index of the condition that is true.'),
+      index: z
+        .number()
+        .describe('The index of the condition that is true, or -1 if no condition is true.'),
     }),
   })
   const index = condition.object.index
