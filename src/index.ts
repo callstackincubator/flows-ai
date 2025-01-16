@@ -44,6 +44,10 @@ type FlowDefinition<T = string> = {
  */
 type Flow = FlowDefinition<Agent>
 
+export function flow(definition: FlowDefinition): FlowDefinition<string> {
+  return definition
+}
+
 /**
  * Use this function to hydrate a flow definition.
  */

@@ -5,7 +5,7 @@ A lightweight, type-safe AI workflow orchestrator inspired by Anthropic's agent 
 ## Installation
 
 ```bash
-npm install dead-simple-ai-orchestrator
+npm install workflows-ai
 ```
 
 ## Motivation
@@ -35,7 +35,7 @@ const summaryAgent = agent({
 Then, you can define and run your workflow.
 
 ```ts
-const translateFlow = {
+const translateFlow = flow({
   agent: 'sequenceAgent',
   input: [
     {
@@ -47,7 +47,7 @@ const translateFlow = {
       input: 'Now summarize the translated text',
     }
   ]
-}
+})
 
 execute(translateFlow, {
   agents: {
@@ -83,7 +83,7 @@ The patterns are inspired by Anthropic's agent patterns. You can learn more abou
 Use the `sequenceAgent` to chain multiple steps where output of one step becomes input for the next.
 
 ```typescript
-const translateAndSummarizeFlow = {
+const translateAndSummarizeFlow = flow({
   agent: 'sequenceAgent',
   name: 'translateAndSummarize',
   input: [
@@ -96,7 +96,7 @@ const translateAndSummarizeFlow = {
       input: 'Now summarize the translated text',
     }
   ]
-}
+})
 
 execute(translateAndSummarizeFlow, {
   agents: {
@@ -111,7 +111,7 @@ execute(translateAndSummarizeFlow, {
 Use the `oneOfAgent` to dynamically route to different execution paths based on conditions.
 
 ```typescript
-const routingFlow = {
+const routingFlow = flow({
   agent: 'oneOfAgent',
   name: 'routeBasedOnSentiment',
   input: [
@@ -126,7 +126,7 @@ const routingFlow = {
       when: 'The sentiment is negative'
     }
   ]
-}
+})
 
 execute(routingFlow, {
   agents: {
@@ -141,7 +141,7 @@ execute(routingFlow, {
 Use the `parallelAgent` to run multiple steps concurrently and aggregate results.
 
 ```typescript
-const parallelAnalysisFlow = {
+const parallelAnalysisFlow = flow({
   agent: 'parallelAgent',
   name: 'analyzeFromMultipleAngles',
   input: [
@@ -158,7 +158,7 @@ const parallelAnalysisFlow = {
       input: 'Extract key phrases from the text'
     }
   ]
-}
+})
 
 execute(parallelAnalysisFlow, {
   agents: {
@@ -174,7 +174,7 @@ execute(parallelAnalysisFlow, {
 Use the `optimizeAgent` to iteratively improve results based on specific criteria.
 
 ```typescript
-const optimizeFlow = {
+const optimizeFlow = flow({
   agent: 'optimizeAgent',
   name: 'improveWriting',
   input: {
@@ -183,7 +183,7 @@ const optimizeFlow = {
   },
   criteria: 'The story should be engaging, have a clear plot, and be free of grammar errors',
   max_iterations: 3
-}
+})
 
 execute(optimizeFlow, {
   agents: {
@@ -197,7 +197,7 @@ execute(optimizeFlow, {
 Use the `bestOfAllAgent` to generate multiple alternatives and pick the best one.
 
 ```typescript
-const bestOfFlow = {
+const bestOfFlow = flow({
   agent: 'bestOfAllAgent',
   name: 'generateBestResponse',
   input: [
@@ -211,7 +211,7 @@ const bestOfFlow = {
     }
   ],
   criteria: 'Pick the response that is most helpful and concise'
-}
+})
 
 execute(bestOfFlow, {
   agents: {
@@ -225,7 +225,7 @@ execute(bestOfFlow, {
 Use the `forEachAgent` to process a collection of items.
 
 ```typescript
-const processGithubIssues = {
+const processGithubIssuesFlow = flow({
   agent: 'sequenceAgent',
   input: [
     {
@@ -243,7 +243,7 @@ const processGithubIssues = {
       },
     }
   ]
-}
+})
 
 execute(processGithubIssues, {
   agents: {

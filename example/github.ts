@@ -2,7 +2,7 @@ import { openai } from '@ai-sdk/openai'
 import { tool } from 'ai'
 import z from 'zod'
 
-import { agent, execute } from '../index.js'
+import { agent, execute, flow } from '../src/index.js'
 
 const communicationAgent = agent({
   model: openai('gpt-4o'),
@@ -68,7 +68,7 @@ const userInputAgent = agent({
   },
 })
 
-const githubProjectHealthAnalysisFlow = {
+const githubProjectHealthAnalysisFlow = flow({
   agent: 'sequenceAgent',
   name: 'githubProjectHealthAnalysisFlow',
   input: [
@@ -114,7 +114,7 @@ const githubProjectHealthAnalysisFlow = {
       },
     },
   ],
-}
+})
 
 const response = await execute(githubProjectHealthAnalysisFlow, {
   agents: {
