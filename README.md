@@ -35,8 +35,7 @@ const summaryAgent = agent({
 Then, you can define and run your workflow.
 
 ```ts
-const translateFlow = flow({
-  agent: 'sequenceAgent',
+const translateFlow = chainFlow({
   input: [
     {
       agent: 'translationAgent',
@@ -83,8 +82,7 @@ The patterns are inspired by Anthropic's agent patterns. You can learn more abou
 Use the `sequenceAgent` to chain multiple steps where output of one step becomes input for the next.
 
 ```typescript
-const translateAndSummarizeFlow = flow({
-  agent: 'sequenceAgent',
+const translateAndSummarizeFlow = chainFlow({
   name: 'translateAndSummarize',
   input: [
     {
@@ -111,8 +109,7 @@ execute(translateAndSummarizeFlow, {
 Use the `oneOfAgent` to dynamically route to different execution paths based on conditions.
 
 ```typescript
-const routingFlow = flow({
-  agent: 'oneOfAgent',
+const routingFlow = routingflow({
   name: 'routeBasedOnSentiment',
   input: [
     {
@@ -141,8 +138,7 @@ execute(routingFlow, {
 Use the `parallelAgent` to run multiple steps concurrently and aggregate results.
 
 ```typescript
-const parallelAnalysisFlow = flow({
-  agent: 'parallelAgent',
+const parallelAnalysisFlow = parallelFlow({
   name: 'analyzeFromMultipleAngles',
   input: [
     {
@@ -174,8 +170,7 @@ execute(parallelAnalysisFlow, {
 Use the `optimizeAgent` to iteratively improve results based on specific criteria.
 
 ```typescript
-const optimizeFlow = flow({
-  agent: 'optimizeAgent',
+const optimizeFlow = evaluateFlow({
   name: 'improveWriting',
   input: {
     agent: 'writingAgent',
@@ -197,9 +192,9 @@ execute(optimizeFlow, {
 Use the `bestOfAllAgent` to generate multiple alternatives and pick the best one.
 
 ```typescript
-const bestOfFlow = flow({
-  agent: 'bestOfAllAgent',
+const bestOfFlow = bestOfFlow({
   name: 'generateBestResponse',
+  criteria: 'Pick the response that is most helpful and concise'
   input: [
     {
       agent: 'responseAgent',
@@ -210,7 +205,6 @@ const bestOfFlow = flow({
       input: 'Generate response version 2'
     }
   ],
-  criteria: 'Pick the response that is most helpful and concise'
 })
 
 execute(bestOfFlow, {
@@ -225,23 +219,21 @@ execute(bestOfFlow, {
 Use the `forEachAgent` to process a collection of items.
 
 ```typescript
-const processGithubIssuesFlow = flow({
-  agent: 'sequenceAgent',
+const processGithubIssuesFlow = forEachFlow({
   input: [
     {
       agent: 'githubAgent',
       name: 'getIssues',
       input: 'Go to Github and get the top 3 most popular issues and number of open issues.',
     },
-    {
-      agent: 'forEachAgent',
+    forEachFlow({
       name: 'iterateOverIssues',
       forEach: 'Github issue and total number of open issues',
       input: {
         agent: 'responseAgent',
         input: 'Send an email to the maintainer.',
       },
-    }
+    })
   ]
 })
 

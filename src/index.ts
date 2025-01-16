@@ -2,51 +2,10 @@ import { openai } from '@ai-sdk/openai'
 import { generateObject, generateText } from 'ai'
 import { z } from 'zod'
 
+import { Flow, FlowDefinition } from './workflows.js'
+
 // tbd: return type
-type Agent<T = any> = (prompt: T, context: string) => Promise<any>
-
-/**
- * On a high-level, Flow is a very simple structure.
- *
- * It is an object with two properties:
- * - agent
- * - input
- *
- * It can also contain some other agent-specific properties.
- * Together, they form an agent payload.
- */
-type FlowDefinition<T = string> = {
-  [key: string]: unknown
-  /**
-   * Name of the agent that should be executed.
-   */
-  agent: T
-  /**
-   * input for the agent.
-   *
-   * For agents define with `agent` helper, input is a string.
-   *
-   * For other agents, input must be an object (nested flow definition)
-   * or an array of objects (nested flow definitions).
-   */
-  input: FlowDefinition<T> | FlowDefinition<T>[] | string
-  /**
-   * Optional name of the flow.
-   */
-  name?: string
-}
-
-/**
- * Flow is a hydrated version of FlowDefinition.
- *
- * The difference here is that `agent` is now a function, instead of a string.
- * In the future, we will perform validation here.
- */
-type Flow = FlowDefinition<Agent>
-
-export function flow(definition: FlowDefinition): FlowDefinition<string> {
-  return definition
-}
+export type Agent<T = any> = (prompt: T, context: string) => Promise<any>
 
 /**
  * Use this function to hydrate a flow definition.
