@@ -2,38 +2,76 @@
 
 A lightweight, type-safe AI workflow orchestrator inspired by Anthropic's agent patterns. Built on top of Vercel AI SDK.
 
-## Core Concepts
-
-- Each agent is a simple async function that can:
-  - Call LLMs
-  - Use tools
-  - Control flow
-  - Call other agents
-- Workflows are defined declaratively using a simple object structure
-- Built-in agents for common patterns
-- Type-safe with TypeScript
-
 ## Installation
 
 ```bash
 npm install dead-simple-ai-orchestrator
 ```
 
-## Creating Agents
+## Core Concepts
 
-Create custom agents using the `agent` helper:
+- Not a framework. Simple library to run your already existing Vercel AI tools and agents.
+- Provide built-in agents for common workflow patterns.
+- Pure and functional. No classes and state. Everything should be serializable.
+- Extremely easy to run.
+
+## Defining a workflow
+
+First, you need to define your agents.
 
 ```typescript
 const translationAgent = agent({
   model: openai('gpt-4'),
   system: 'You are a translation agent...',
-  tools: {
-    // Optional tools the agent can use
+})
+
+const summaryAgent = agent({
+  model: openai('gpt-4'),
+  system: 'You are a summary agent...',
+})
+```
+
+Then, you can define and run your workflow.
+
+```ts
+const translateFlow = {
+  agent: 'sequenceAgent',
+  input: [
+    {
+      agent: 'translationAgent',
+      input: 'Translate this text to English',
+    },
+    {
+      agent: 'summaryAgent',
+      input: 'Now summarize the translated text',
+    }
+  ]
+}
+
+execute(translateFlow, {
+  agents: {
+    translationAgent,
+    summaryAgent
   }
 })
 ```
 
-Note: This is exact same API as Vercel AI SDK `generateText`. The only difference is that we pass `prompt` for you during execution.
+In this example, we will first translate the text to English and then summarize it.
+
+> [!CAUTION]
+> This library is in early stages and the API is not stable. We are building a higher-level API for defining workflows. For now, you need to work with a bit more verbose JSON representation of flows.
+
+Jump to [next section](#available-workflow-patterns) to see other available composition patterns, such as parallelism or conditional execution.
+
+## Design
+
+The core architecture is built around the concept of a **Flow** - a simple, composable structure that can be infinitely nested.
+
+In the examples below, you'll see flows defined as JSON-like objects. Each flow has an `agent` (what to execute), `input` (what to process), and optional properties specific to that agent. 
+
+The `input` can be a string with instructions (if the agent is a simple LLM call), another flow or an array of flows (if agent is a workflow).
+
+This flexibility allows for infinite composition. When a flow is executed, each agent receives its complete configuration as a payload and can decide how to handle it.
 
 ## Available Workflow Patterns
 
@@ -58,6 +96,13 @@ const translateAndSummarizeFlow = {
     }
   ]
 }
+
+execute(translateAndSummarizeFlow, {
+  agents: {
+    translationAgent,
+    summaryAgent
+  }
+})
 ```
 
 ### 2. Routing (Conditional Execution)
@@ -81,6 +126,13 @@ const routingFlow = {
     }
   ]
 }
+
+execute(routingFlow, {
+  agents: {
+    positiveResponseAgent,
+    negativeResponseAgent
+  }
+})
 ```
 
 ### 3. Parallelization (Concurrent Execution)
@@ -106,6 +158,14 @@ const parallelAnalysisFlow = {
     }
   ]
 }
+
+execute(parallelAnalysisFlow, {
+  agents: {
+    sentimentAnalysisAgent,
+    topicExtractionAgent,
+    keywordExtractionAgent
+  }
+})
 ```
 
 ### 4. Evaluator-Optimizer (Feedback Loop)
@@ -123,6 +183,12 @@ const optimizeFlow = {
   criteria: 'The story should be engaging, have a clear plot, and be free of grammar errors',
   max_iterations: 3
 }
+
+execute(optimizeFlow, {
+  agents: {
+    writingAgent
+  }
+})
 ```
 
 ### 5. Best of N (Multiple Attempts)
@@ -145,6 +211,12 @@ const bestOfFlow = {
   ],
   criteria: 'Pick the response that is most helpful and concise'
 }
+
+execute(bestOfFlow, {
+  agents: {
+    responseAgent
+  }
+})
 ```
 
 ### 6. Iteration (ForEach Processing)
@@ -171,6 +243,13 @@ const processGithubIssues = {
     }
   ]
 }
+
+execute(processGithubIssues, {
+  agents: {
+    githubAgent,
+    responseAgent
+  }
+})
 ```
 
 ## Running Workflows
