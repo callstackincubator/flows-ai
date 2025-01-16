@@ -2,31 +2,38 @@ import { openai } from '@ai-sdk/openai'
 import { generateObject, generateText } from 'ai'
 import { z } from 'zod'
 
-type Agent = (prompt: any, context: string) => Promise<any>
+// tbd: return type
+type Agent<T = any> = (prompt: T, context: string) => Promise<any>
 
 /**
  * On a high-level, Flow is a very simple structure.
  *
  * It is an object with two properties:
  * - agent
- * - payload
+ * - input
+ *
+ * It can also contain some other agent-specific properties.
+ * Together, they form an agent payload.
  */
 type FlowDefinition<T = string> = {
-  [key: string]: any
-
+  [key: string]: unknown
   /**
    * Name of the agent that should be executed.
    */
   agent: T
   /**
-   * Payload for the agent.
+   * input for the agent.
    *
-   * For user-defined agents, payload can be anything. Handling the payload will be up to the user.
-   * By default, we expect payload to be string most of the time (aka instruction).
+   * For agents define with `agent` helper, input is a string.
    *
-   * For routing agents, payload carries additional data for the agent.
+   * For other agents, input must be an object (nested flow definition)
+   * or an array of objects (nested flow definitions).
    */
-  payload: FlowDefinition<T> | FlowDefinition<T>[] | string
+  input: FlowDefinition<T> | FlowDefinition<T>[] | string
+  /**
+   * Optional name of the flow.
+   */
+  name?: string
 }
 
 /**
@@ -45,59 +52,66 @@ function hydrate(definition: FlowDefinition<string>, agents: Record<string, Agen
   if (!agent) {
     throw new Error(`Agent ${definition.agent} not found`)
   }
-  if (typeof definition.payload === 'string') {
+  if (typeof definition.input === 'string') {
     return {
       ...definition,
       agent,
-      payload: definition.payload,
+      input: definition.input,
     }
   }
-  if (Array.isArray(definition.payload)) {
+  if (Array.isArray(definition.input)) {
     return {
       ...definition,
       agent,
-      payload: definition.payload.map((flow) => hydrate(flow, agents)),
+      input: definition.input.map((flow) => hydrate(flow, agents)),
     }
   }
   return {
     ...definition,
     agent,
-    payload: hydrate(definition.payload, agents),
+    input: hydrate(definition.input, agents),
   }
 }
 
-type UserDefinedAgentInput = {
-  payload: any
+function run({ agent, ...input }: Flow, context: string) {
+  return agent(input, context)
+}
+
+type UserDefinedAgentPayload = {
+  input: any
 }
 
 /**
  * Helper function to create a user-defined agent that can then be referneced in a flow.
  */
-export function agent({ maxSteps = 10, ...rest }: Parameters<typeof generateText>[0]): Agent {
-  return async ({ payload }: UserDefinedAgentInput, context: string) => {
+export function agent({
+  maxSteps = 10,
+  ...rest
+}: Parameters<typeof generateText>[0]): Agent<UserDefinedAgentPayload> {
+  return async ({ input }, context) => {
     const response = await generateText({
       ...rest,
       maxSteps,
       prompt: `
         ${JSON.stringify(context)}
-        Here is the instruction: ${JSON.stringify(payload)}
+        Here is the instruction: ${JSON.stringify(input)}
       `,
     })
     return response.text
   }
 }
 
-type SequenceAgentInput = {
-  payload: Flow[]
+type BaseAgentPayload = {
+  input: Flow[]
 }
 
 /**
  * Use this agent to implement workflow where output of each step
  * is used as input for the next step.
  */
-const sequenceAgent = async ({ payload }: SequenceAgentInput, context: string) => {
+const sequenceAgent: Agent<BaseAgentPayload> = async ({ input }, context) => {
   let lastResult: string | undefined
-  for (const step of payload) {
+  for (const step of input) {
     lastResult = await run(
       step,
       `
@@ -109,25 +123,21 @@ const sequenceAgent = async ({ payload }: SequenceAgentInput, context: string) =
   return lastResult
 }
 
-type ParallelAgentInput = {
-  payload: Flow[]
-}
-
 /**
  * Use this agent to implement workflow where each step is executed in parallel.
  */
-const parallelAgent = async ({ payload }: ParallelAgentInput, context: string) => {
-  return Promise.all(payload.map((step: any) => run(step, context)))
+const parallelAgent: Agent<BaseAgentPayload> = async ({ input }, context) => {
+  return Promise.all(input.map((step) => run(step, context)))
 }
 
-type OneOfAgentInput = {
-  payload: Flow[]
+type OneOfAgentPayload = {
+  input: (Flow & { when: string })[]
 }
 
 /**
  * Use this agent to implement workflow where you need to route execution based on a condition.
  */
-const oneOfAgent = async ({ payload }: OneOfAgentInput, context: string) => {
+const oneOfAgent: Agent<OneOfAgentPayload> = async ({ input }, context) => {
   const condition = await generateObject({
     model: openai('gpt-4o-mini'),
     system: `
@@ -136,7 +146,7 @@ const oneOfAgent = async ({ payload }: OneOfAgentInput, context: string) => {
     `,
     prompt: `
       Here is the context: ${JSON.stringify(context)}
-      Here is the array of conditions: ${JSON.stringify(payload.map((p) => p.when))}
+      Here is the array of conditions: ${JSON.stringify(input.map((p) => p.when))}
     `,
     schema: z.object({
       index: z.number().describe('The index of the condition that is true.'),
@@ -146,11 +156,11 @@ const oneOfAgent = async ({ payload }: OneOfAgentInput, context: string) => {
   if (index === -1) {
     throw new Error('No condition was satisfied')
   }
-  return run(payload[index], context)
+  return run(input[index], context)
 }
 
-type OptimizeAgentInput = {
-  payload: Flow
+type OptimizeAgentPayload = {
+  input: Flow
   criteria: string
   max_iterations?: number
 }
@@ -159,14 +169,14 @@ type OptimizeAgentInput = {
  * Use this agent to implement workflow where you need to evaluate a condition
  * and optimize the flow based on the result.
  */
-export const optimizeAgent = async (
-  { payload, criteria, max_iterations = 3 }: OptimizeAgentInput,
+export const optimizeAgent: Agent<OptimizeAgentPayload> = async (
+  { input, criteria, max_iterations = 3 },
   context: string
 ) => {
   let rejection_reason: string | undefined
   for (let i = 0; i < max_iterations; i++) {
     const result = await run(
-      payload,
+      input,
       rejection_reason
         ? `
           ${JSON.stringify(context)}
@@ -202,8 +212,8 @@ export const optimizeAgent = async (
   throw new Error('Max iterations reached')
 }
 
-type BestOfAllAgentInput = {
-  payload: Flow[]
+type BestOfAllAgentPayload = {
+  input: Flow[]
   criteria: string
 }
 
@@ -211,8 +221,11 @@ type BestOfAllAgentInput = {
  * Use this agent to implement workflow where you need to pick the best result
  * from a list of results.
  */
-const bestOfAllAgent = async ({ payload, criteria }: BestOfAllAgentInput, context: string) => {
-  const results = await Promise.all(payload.map((flow: any) => run(flow, context)))
+const bestOfAllAgent: Agent<BestOfAllAgentPayload> = async (
+  { input, criteria },
+  context: string
+) => {
+  const results = await Promise.all(input.map((flow) => run(flow, context)))
   const best = await generateObject({
     model: openai('gpt-4o-mini'),
     system: `
@@ -230,15 +243,15 @@ const bestOfAllAgent = async ({ payload, criteria }: BestOfAllAgentInput, contex
   return results[best.object.index]
 }
 
-type ForEachAgentInput = {
-  payload: Flow
+type ForEachAgentPayload = {
+  input: Flow
   forEach: string
 }
 
 /**
  * Use this agent to implement workflow where you need to loop over a list of steps.
  */
-const forEachAgent = async ({ payload, forEach }: ForEachAgentInput, context: string) => {
+const forEachAgent: Agent<ForEachAgentPayload> = async ({ input, forEach }, context) => {
   const response = await generateObject({
     model: openai('gpt-4o-mini'),
     system: `
@@ -254,7 +267,7 @@ const forEachAgent = async ({ payload, forEach }: ForEachAgentInput, context: st
       steps: z.array(z.string()).describe('The steps to be executed.'),
     }),
   })
-  return await Promise.all(response.object.steps.map((step) => run(payload, step)))
+  return await Promise.all(response.object.steps.map((step) => run(input, step)))
 }
 
 const builtInAgents: Record<string, Agent> = {
@@ -266,13 +279,36 @@ const builtInAgents: Record<string, Agent> = {
   forEachAgent,
 }
 
-export function flow(definition: FlowDefinition<string>, agents: Record<string, Agent>) {
-  return hydrate(definition, {
-    ...builtInAgents,
-    ...agents,
-  })
+type ExecuteOptions = {
+  /**
+   * A map of agents to be used in the flow.
+   */
+  agents: Record<string, Agent>
+  /**
+   * Called before each agent is executed.
+   */
+  onFlowStart?: (flow: Flow, context: string) => void
 }
 
-export function run({ agent, ...payload }: Flow, context: string) {
-  return agent(payload, context)
+export async function execute(definition: FlowDefinition<string>, opts: ExecuteOptions) {
+  let agents = {
+    ...builtInAgents,
+    ...opts.agents,
+  }
+  /**
+   * When provided, we annotate each agent with a function that will call the
+   * onFlowStart callback before it gets executed.
+   */
+  if (opts.onFlowStart) {
+    agents = Object.fromEntries(
+      Object.entries(agents).map(([key, agent]) => [
+        key,
+        (...args) => {
+          opts.onFlowStart?.(...args)
+          return agent(...args)
+        },
+      ])
+    )
+  }
+  return run(hydrate(definition, agents), '')
 }
