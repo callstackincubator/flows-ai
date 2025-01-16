@@ -73,7 +73,7 @@ function hydrate(definition: FlowDefinition<string>, agents: Record<string, Agen
   }
 }
 
-function run({ agent, ...input }: Flow, context: string) {
+export function run({ agent, ...input }: Flow, context: string) {
   return agent(input, context)
 }
 
@@ -152,7 +152,7 @@ const oneOfAgent: Agent<OneOfAgentPayload> = async ({ input }, context) => {
     schema: z.object({
       index: z
         .number()
-        .describe('The index of the condition that is true, or -1 if no condition is true.'),
+        .describe('The index of the condition that is met, or -1 if no condition was met.'),
     }),
   })
   const index = condition.object.index
@@ -291,6 +291,11 @@ type ExecuteOptions = {
    * Called before each agent is executed.
    */
   onFlowStart?: (flow: Flow, context: string) => void
+  /**
+   * Called after each agent is executed.
+   * For complex flows, this will be called when all nested flows are executed.
+   */
+  onFlowFinish?: (flow: Flow, result: any) => void
 }
 
 export async function execute(definition: FlowDefinition<string>, opts: ExecuteOptions) {
@@ -306,9 +311,11 @@ export async function execute(definition: FlowDefinition<string>, opts: ExecuteO
     agents = Object.fromEntries(
       Object.entries(agents).map(([key, agent]) => [
         key,
-        (...args) => {
-          opts.onFlowStart?.(...args)
-          return agent(...args)
+        async (flow, context) => {
+          opts.onFlowStart?.(flow, context)
+          const result = await agent(flow, context)
+          opts.onFlowFinish?.(flow, result)
+          return result
         },
       ])
     )
