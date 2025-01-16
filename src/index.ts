@@ -291,6 +291,11 @@ type ExecuteOptions = {
    * Called before each agent is executed.
    */
   onFlowStart?: (flow: Flow, context: string) => void
+  /**
+   * Called after each agent is executed.
+   * For complex flows, this will be called when all nested flows are executed.
+   */
+  onFlowFinish?: (flow: Flow, result: any) => void
 }
 
 export async function execute(definition: FlowDefinition<string>, opts: ExecuteOptions) {
@@ -306,9 +311,11 @@ export async function execute(definition: FlowDefinition<string>, opts: ExecuteO
     agents = Object.fromEntries(
       Object.entries(agents).map(([key, agent]) => [
         key,
-        (...args) => {
-          opts.onFlowStart?.(...args)
-          return agent(...args)
+        async (flow, context) => {
+          opts.onFlowStart?.(flow, context)
+          const result = await agent(flow, context)
+          opts.onFlowFinish?.(flow, result)
+          return result
         },
       ])
     )
