@@ -1,6 +1,6 @@
 {
   "name": "workflows-ai",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "type": "module",
   "exports": {
     ".": {
@@ -67,9 +67,12 @@
   "release-it": {
     "git": {
       "commitMessage": "chore: release ${version}",
+      "requireCleanWorkingDir": false,
       "tagName": "v${version}"
     },
-    "npm": false,
+    "npm": {
+      "publish": true
+    },
     "github": {
       "release": true
     }
