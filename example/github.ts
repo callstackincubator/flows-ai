@@ -2,7 +2,8 @@ import { openai } from '@ai-sdk/openai'
 import { tool } from 'ai'
 import z from 'zod'
 
-import { agent, execute } from '../index.js'
+import { forEach, parallel, routing, sequence } from '../src/flows.js'
+import { agent, execute } from '../src/index.js'
 
 const communicationAgent = agent({
   model: openai('gpt-4o'),
@@ -68,8 +69,7 @@ const userInputAgent = agent({
   },
 })
 
-const githubProjectHealthAnalysisFlow = {
-  agent: 'sequenceAgent',
+const githubProjectHealthAnalysisFlow = sequence({
   name: 'githubProjectHealthAnalysisFlow',
   input: [
     {
@@ -82,15 +82,12 @@ const githubProjectHealthAnalysisFlow = {
       name: 'getIssues',
       input: 'Go to Github and get the top 3 most popular issues and number of open issues.',
     },
-    {
-      agent: 'forEachAgent',
+    forEach({
       name: 'iterateOverIssues',
       forEach: 'Github issue and total number of open issues',
-      input: {
-        agent: 'parallelAgent',
+      input: parallel({
         input: [
-          {
-            agent: 'oneOfAgent',
+          routing({
             name: 'analyzeIssues',
             input: [
               {
@@ -104,17 +101,17 @@ const githubProjectHealthAnalysisFlow = {
                 when: 'There are less than 500 open issues',
               },
             ],
-          },
+          }),
           {
             agent: 'communicationAgent',
             name: 'informMaintainer',
             input: 'Inform the maintainer about open issue.',
           },
         ],
-      },
-    },
+      }),
+    }),
   ],
-}
+})
 
 const response = await execute(githubProjectHealthAnalysisFlow, {
   agents: {
