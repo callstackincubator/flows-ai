@@ -1,0 +1,32 @@
+{
+  "$schema": "https://mintlify.com/schema.json",
+  "name": "AI-FLOWS",
+  "favicon": "/favicon.svg",
+  "colors": {
+    "primary": "#0D9373",
+    "light": "#07C983",
+    "dark": "#0D9373",
+    "anchors": {
+      "from": "#0D9373",
+      "to": "#07C983"
+    }
+  },
+  "navigation": [
+    {
+      "group": "Flows",
+      "pages": [
+        "flows/sequence",
+        "flows/parallel",
+        "flows/routing",
+        "flows/evaluator",
+        "flows/best-of-all",
+        "flows/for-each"
+      ]
+    }
+  ],
+  "footerSocials": {
+    "x": "https://x.com/mintlify",
+    "github": "https://github.com/mintlify",
+    "linkedin": "https://linkedin.com/company/mintlify"
+  }
+}

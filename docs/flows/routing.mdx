@@ -1,0 +1,80 @@
+---
+title: 'Routing'
+description: 'How to use routing flow'
+---
+
+```mermaid
+%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {
+      'primaryColor': '#8232ff',
+      'primaryTextColor': '#fff',
+      'primaryBorderColor': '#141450',
+      'lineColor': '#33CCCC',
+      'secondaryColor': '#141450',
+      'tertiaryColor': '#33CCCC'
+    }
+  }
+}%%
+flowchart LR
+    A("IN") --> B["ROUTING AGENT"]
+    B -.-> C["AGENT 1"] & D["AGENT 2"]
+    B --> E["AGENT 3"]
+    C -.-> F("OUT")
+    D -.-> F
+    E --> F
+
+    style C stroke-width:2px,stroke-dasharray: 2
+    style D stroke-width:2px,stroke-dasharray: 2
+```
+
+Declare agents
+```typescript
+const germanAgent = agent({
+  model: openai('gpt-4'),
+  system: 'You are a german translation agent...',
+})
+
+const polishAgent = agent({
+  model: openai('gpt-4'),
+  system: 'You are a polish translation agent...',
+})
+
+const spanishAgent = agent({
+  model: openai('gpt-4'),
+  system: 'You are a spanish translation agent...',
+})
+```
+
+Declare flow
+```typescript
+const parallelTranslationFlow = parallel({
+  name: 'translateToMultipleLanguages',
+  input: [
+    {
+      agent: 'germanAgent',
+      input: 'The article content to translate...'
+    },
+    {
+      agent: 'polishAgent',
+      input: 'The article content to translate...'
+    },
+    {
+      agent: 'spanishAgent',
+      input: 'The article content to translate...'
+    }
+  ]
+})
+```
+
+Execute
+```typescript
+execute(parallelAnalysisFlow, {
+  agents: {
+    sentimentAnalysisAgent,
+    topicExtractionAgent,
+    keywordExtractionAgent
+  }
+})
+```

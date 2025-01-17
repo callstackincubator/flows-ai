@@ -1,0 +1,77 @@
+---
+title: Sequence
+description: "How to use the sequence flow"
+---
+
+```mermaid
+%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {
+      'primaryColor': '#8232ff',
+      'primaryTextColor': '#fff',
+      'primaryBorderColor': '#141450',
+      'lineColor': '#33CCCC',
+      'secondaryColor': '#141450',
+      'tertiaryColor': '#33CCCC'
+    }
+  }
+}%%
+flowchart LR
+    A(IN) --> B[AGENT 1]
+    B --> C[AGENT 2]
+    C --> D[AGENT 3]
+    D --> E(OUT)
+```
+
+Declare agents
+
+```typescript
+const translationAgent = agent({
+  model: openai('gpt-4'),
+  system: 'You are a translation agent...',
+})
+
+const grammarAgent = agent({
+  model: openai('gpt-4'),
+  system: 'You are a grammar agent...',
+})
+
+const summaryAgent = agent({
+  model: openai('gpt-4'),
+  system: 'You are a summary agent...',
+})
+```
+
+Declare flow
+
+```typescript
+const translateFlow = sequence({
+  input: [
+    {
+      agent: 'translationAgent',
+      input: 'Translate this text to English',
+    },
+    {
+      agent: 'grammarAgent',
+      input: 'Check for grammar errors',
+    },
+    {
+      agent: 'summaryAgent',
+      input: 'Now summarize the translated text',
+    }
+  ]
+})
+```
+
+Execute
+
+```typescript
+execute(translateFlow, {
+  agents: {
+    translationAgent,
+    grammarAgent,
+    summaryAgent
+  }
+})
+```
