@@ -25,17 +25,18 @@ flowchart LR
 ```
 
 Declare agents
-```typescript
+
+```ts
 const writingAgent =  agent({
-  model: openai('gpt-4'),
+  model: openai('gpt-4o'),
   system: 'You are a writer...',
 })
 ```
 
 Declare flow
-```typescript
+
+```ts
 const optimizeFlow = evaluate({
-  name: 'improveWriting',
   input: {
     agent: 'writingAgent',
     input: 'Write a compelling story'
@@ -46,7 +47,8 @@ const optimizeFlow = evaluate({
 ```
 
 Execute
-```typescript
+
+```ts
 execute(optimizeFlow, {
   agents: {
     writingAgent

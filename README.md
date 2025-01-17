@@ -22,12 +22,12 @@ First, you need to define your agents.
 
 ```typescript
 const translationAgent = agent({
-  model: openai('gpt-4'),
+  model: openai('gpt-4o'),
   system: 'You are a translation agent...',
 })
 
 const summaryAgent = agent({
-  model: openai('gpt-4'),
+  model: openai('gpt-4o'),
   system: 'You are a summary agent...',
 })
 ```

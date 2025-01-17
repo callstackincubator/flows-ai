@@ -31,44 +31,40 @@ flowchart LR
 ```
 
 Declare agents
-```typescript
+
+```ts
 const githubAgent = agent({
-  model: openai('gpt-4'),
+  model: openai('gpt-4o'),
   system: 'You are a github crawler...',
-  tools: {
-    ...toolsForGithub
-  }
 })
 
 const responseAgent = agent({
-  model: openai('gpt-4'),
+  model: openai('gpt-4o'),
   system: 'You are responsible for summarizing issues on github...',
 })
 ```
 
 Declare flow
-```typescript
-const processGithubIssuesFlow = forEach({
-  input: [
-    {
-      agent: 'githubAgent',
-      name: 'getIssues',
-      input: 'Go to Github and get the top 3 most popular issues and number of open issues.',
+
+```ts
+const processGithubIssuesFlow = sequence([
+  {
+    agent: 'githubAgent',
+    input: 'Go to Github and get the top 3 most popular issues and number of open issues.',
+  },
+  forEach({
+    item: 'Github issue and total number of open issues',
+    input: {
+      agent: 'responseAgent',
+      input: 'Send an email to the project maintainer.',
     },
-    forEach({
-      name: 'iterateOverIssues',
-      forEach: 'Github issue and total number of open issues',
-      input: {
-        agent: 'responseAgent',
-        input: 'Send an email to the maintainer.',
-      },
-    })
-  ]
-})
+  })
+])
 ```
 
 Execute
-```typescript
+
+```ts
 execute(processGithubIssues, {
   agents: {
     githubAgent,

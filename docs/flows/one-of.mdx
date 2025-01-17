@@ -1,5 +1,5 @@
 ---
-title: 'Routing'
+title: 'One of'
 description: 'How to use routing flow'
 ---
 
@@ -30,51 +30,61 @@ flowchart LR
 ```
 
 Declare agents
+
 ```typescript
 const germanAgent = agent({
-  model: openai('gpt-4'),
+  model: openai('gpt-4o'),
   system: 'You are a german translation agent...',
 })
 
 const polishAgent = agent({
-  model: openai('gpt-4'),
+  model: openai('gpt-4o'),
   system: 'You are a polish translation agent...',
 })
 
 const spanishAgent = agent({
-  model: openai('gpt-4'),
+  model: openai('gpt-4o'),
   system: 'You are a spanish translation agent...',
 })
 ```
 
 Declare flow
+
 ```typescript
-const parallelTranslationFlow = parallel({
-  name: 'translateToMultipleLanguages',
-  input: [
-    {
+const oneOfTranslationFlow = oneOf([
+  {
+    when: 'The article is in German',
+    input: {
       agent: 'germanAgent',
-      input: 'The article content to translate...'
-    },
-    {
-      agent: 'polishAgent',
-      input: 'The article content to translate...'
-    },
-    {
-      agent: 'spanishAgent',
-      input: 'The article content to translate...'
+      input: 'Translate the article to English'
     }
-  ]
-})
+  },
+  {
+    when: 'The article is in Polish',
+    input: {
+      agent: 'polishAgent',
+      input: 'Translate the article to English'
+    }
+  },
+  {
+    when: 'The article is in Spanish',
+    input: {
+      agent: 'spanishAgent',
+      input: 'Translate the article to English'
+    }
+  }
+])
 ```
 
-Execute
+Execute flow
+
 ```typescript
-execute(parallelAnalysisFlow, {
+execute(oneOfTranslationFlow, {
   agents: {
-    sentimentAnalysisAgent,
-    topicExtractionAgent,
-    keywordExtractionAgent
-  }
+    germanAgent,
+    polishAgent,
+    spanishAgent
+  },
+  input: 'The article content to translate...'
 })
 ```

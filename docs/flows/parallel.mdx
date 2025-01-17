@@ -18,60 +18,64 @@ description: 'How to use parallel flow'
   }
 }%%
 flowchart LR
-    A(IN) --> B[AGENT 1]
-    A --> C[AGENT 2]
-    A --> D[AGENT 3]
-    B --> E(OUT)
-    C --> E(OUT)
-    D --> E(OUT)
+    A("IN") --> B["ROUTING AGENT"]
+    B -.-> C["AGENT 1"] & D["AGENT 2"]
+    B --> E["AGENT 3"]
+    C -.-> F("OUT")
+    D -.-> F
+    E --> F
+
+    style C stroke-width:2px,stroke-dasharray: 2
+    style D stroke-width:2px,stroke-dasharray: 2
 ```
 
 Declare agents
+
 ```typescript
 const germanAgent = agent({
-  model: openai('gpt-4'),
+  model: openai('gpt-4o'),
   system: 'You are a german translation agent...',
 })
 
 const polishAgent = agent({
-  model: openai('gpt-4'),
+  model: openai('gpt-4o'),
   system: 'You are a polish translation agent...',
 })
 
 const spanishAgent = agent({
-  model: openai('gpt-4'),
+  model: openai('gpt-4o'),
   system: 'You are a spanish translation agent...',
 })
 ```
 
 Declare flow
+
 ```typescript
-const parallelTranslationFlow = parallel({
-  name: 'translateToMultipleLanguages',
-  input: [
-    {
-      agent: 'germanAgent',
-      input: 'The article content to translate...'
-    },
-    {
-      agent: 'polishAgent',
-      input: 'The article content to translate...'
-    },
-    {
-      agent: 'spanishAgent',
-      input: 'The article content to translate...'
-    }
-  ]
-})
+const parallelTranslationFlow = parallel([
+  {
+    agent: 'germanAgent',
+    input: 'Translate the article to German'
+  },
+  {
+    agent: 'polishAgent',
+    input: 'Translate the article to Polish'
+  },
+  {
+    agent: 'spanishAgent',
+    input: 'Translate the article to Spanish'
+  }
+])
 ```
 
-Execute
+Execute flow
+
 ```typescript
-execute(parallelAnalysisFlow, {
+execute(parallelTranslationFlow, {
   agents: {
-    sentimentAnalysisAgent,
-    topicExtractionAgent,
-    keywordExtractionAgent
-  }
+    germanAgent,
+    polishAgent,
+    spanishAgent
+  },
+  input: 'The article content to translate...'
 })
 ```

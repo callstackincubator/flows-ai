@@ -28,17 +28,18 @@ flowchart LR
 ```
 
 Declare agents
-```typescript
+
+```ts
 const responseAgent =  agent({
-  model: openai('gpt-4'),
+  model: openai('gpt-4o'),
   system: 'You are consumer relations specialist...',
 })
 ```
 
 Declare flow
-```typescript
+
+```ts
 const bestOfFlow = bestOfAll({
-  name: 'generateBestResponse',
   criteria: 'Pick the response that is most helpful and concise'
   input: [
     {
@@ -53,8 +54,9 @@ const bestOfFlow = bestOfAll({
 })
 ```
 
-Execute
-```typescript
+Execute flow
+
+```ts
 execute(bestOfFlow, {
   agents: {
     responseAgent
