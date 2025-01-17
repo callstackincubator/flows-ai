@@ -273,10 +273,11 @@ const forEachAgent: Agent<ForEachAgentPayload> = async ({ input, forEach }, cont
   return await Promise.all(response.object.steps.map((step) => run(input, step)))
 }
 
-const builtInAgents: Record<string, Agent> = {
+export const builtInAgents: Record<string, Agent> = {
   sequenceAgent,
   parallelAgent,
   oneOfAgent,
+  routing: oneOfAgent,
   bestOfAllAgent,
   optimizeAgent,
   forEachAgent,
