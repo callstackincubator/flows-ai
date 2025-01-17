@@ -1,26 +1,29 @@
+/**
+ * Convert to camelCase
+ * @param str
+ * @returns
+ */
+function camelCase(str: string) {
+  if (str) {
+    const temp = str.replace(/-([a-z])/g, (m) => m[1].toUpperCase())
+    return temp.charAt(0).toLowerCase() + temp.slice(1)
+  } else {
+    return str
+  }
+}
+
 /** @jsx createElement */
-// ^ Tell TypeScript to use `JSX.createElement` as the factory for JSX in this file.
+// ^ Tell TypeScript to use `createElement` as the factory for JSX in this file.
 /**
  * Our custom JSX factory. Whenever TS sees <Tag prop="..."> in this file,
- * it will compile to `MyJSX.createElement(Tag, { prop: "..." }, ...)`.
+ * it will compile to `createElement(Tag, { prop: "..." }, ...)`.
  * We simply return a JSON-like object, building up your “agent flow” structure.
  */
 export function createElement(type: any, props: any, ...children: any[]): any {
   const { name, input, forEach, when } = props || {}
 
-  // Map from JSX component name -> "agent" string
-  const agentNameMap: Record<string, string> = {
-    SequenceAgent: 'sequenceAgent',
-    UserInputAgent: 'userInputAgent',
-    GithubAgent: 'githubAgent',
-    ForEachAgent: 'forEachAgent',
-    ParallelAgent: 'parallelAgent',
-    OneOfAgent: 'oneOfAgent',
-    CommunicationAgent: 'communicationAgent',
-  }
-
   // Derive agent from the function name
-  const agent = agentNameMap[type?.name] ?? 'unknownAgent'
+  const agent = type?.name ? camelCase(type?.name) : undefined
 
   // Build the base JSON object
   const result: any = { agent }

@@ -1,6 +1,6 @@
 import { execute } from '../src/index.js'
-import { communicationAgent, githubAgent, userInputAgent } from './github/agents.js'
 import { createElement } from '../src/jsx.js'
+import { communicationAgent, githubAgent, userInputAgent } from './github/agents.js'
 
 /**
  * Minimal agent "components."
