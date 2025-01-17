@@ -15,5 +15,5 @@
     "jsxImportSource": "src/jsx",
     "customConditions": ["bun"],
   },
-  "include": ["./src", "example/github.tsx", "global.d.ts"]
+  "include": ["./src"]
 }
