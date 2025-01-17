@@ -1,23 +1,9 @@
 ---
 title: 'For each'
-description: 'How to use for each flow'
 ---
 
 ```mermaid
-%%{
-  init: {
-    'theme': 'base',
-    'themeVariables': {
-      'primaryColor': '#8232ff',
-      'primaryTextColor': '#fff',
-      'primaryBorderColor': '#141450',
-      'lineColor': '#33CCCC',
-      'tertiaryTextColor': "#fff",
-      'secondaryColor': '#141450',
-      'tertiaryColor': '#141450'
-    }
-  }
-}%%
+%%{init: {'themeVariables': { 'clusterBkg': 'transparent' }}}%%
 flowchart LR
     IN("IN") --> forEach
     subgraph forEach [For Each]
@@ -30,23 +16,11 @@ flowchart LR
     forEach --> OUT("OUT")
 ```
 
-Declare agents
+Use this flow to process a collection of items.
 
-```ts
-const githubAgent = agent({
-  model: openai('gpt-4o'),
-  system: 'You are a github crawler...',
-})
+<CodeGroup>
 
-const responseAgent = agent({
-  model: openai('gpt-4o'),
-  system: 'You are responsible for summarizing issues on github...',
-})
-```
-
-Declare flow
-
-```ts
+```ts flow.ts
 const processGithubIssuesFlow = sequence([
   {
     agent: 'githubAgent',
@@ -62,9 +36,19 @@ const processGithubIssuesFlow = sequence([
 ])
 ```
 
-Execute
+```ts agents.ts
+const githubAgent = agent({
+  model: openai('gpt-4o'),
+  system: 'You are a github crawler...',
+})
 
-```ts
+const responseAgent = agent({
+  model: openai('gpt-4o'),
+  system: 'You are responsible for summarizing issues on github...',
+})
+```
+
+```ts main.ts
 execute(processGithubIssues, {
   agents: {
     githubAgent,
@@ -72,3 +56,5 @@ execute(processGithubIssues, {
   }
 })
 ```
+
+</CodeGroup>

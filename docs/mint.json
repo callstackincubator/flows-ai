@@ -3,15 +3,21 @@
   "name": "Flows AI",
   "favicon": "/favicon.svg",
   "colors": {
-    "primary": "#0D9373",
-    "light": "#07C983",
-    "dark": "#0D9373",
+    "primary": "#8232ff",
+    "light": "#8232ff",
+    "dark": "#8232ff",
     "anchors": {
-      "from": "#0D9373",
-      "to": "#07C983"
+      "from": "#8232ff",
+      "to": "#8232ff"
     }
   },
   "navigation": [
+    {
+      "group": "Introduction",
+      "pages": [
+        "introduction"
+      ]
+    },
     {
       "group": "Flows",
       "pages": [

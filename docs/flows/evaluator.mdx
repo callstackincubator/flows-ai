@@ -4,19 +4,6 @@ description: 'How to use evaluator flow'
 ---
 
 ```mermaid
-%%{
-  init: {
-    'theme': 'base',
-    'themeVariables': {
-      'primaryColor': '#8232ff',
-      'primaryTextColor': '#fff',
-      'primaryBorderColor': '#141450',
-      'lineColor': '#33CCCC',
-      'secondaryColor': '#141450',
-      'tertiaryColor': '#33CCCC'
-    }
-  }
-}%%
 flowchart LR
     A("IN") --> B["OPTIMIZER"]
     B -.-> C["EVALUATOR"]
@@ -24,18 +11,11 @@ flowchart LR
     C -.-> F("OUT")
 ```
 
-Declare agents
+Use this flow to iteratively improve results based on specific criteria.
 
-```ts
-const writingAgent =  agent({
-  model: openai('gpt-4o'),
-  system: 'You are a writer...',
-})
-```
+<CodeGroup>
 
-Declare flow
-
-```ts
+```ts flow.ts
 const optimizeFlow = evaluate({
   input: {
     agent: 'writingAgent',
@@ -46,12 +26,19 @@ const optimizeFlow = evaluate({
 })
 ```
 
-Execute
+```ts agents.ts
+const writingAgent =  agent({
+  model: openai('gpt-4o'),
+  system: 'You are a writer...',
+})
+```
 
-```ts
+```ts main.ts
 execute(optimizeFlow, {
   agents: {
     writingAgent
   }
 })
 ```
+
+</CodeGroup>

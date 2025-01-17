@@ -1,22 +1,8 @@
 ---
 title: Sequence
-description: "How to use the sequence flow"
 ---
 
 ```mermaid
-%%{
-  init: {
-    'theme': 'base',
-    'themeVariables': {
-      'primaryColor': '#8232ff',
-      'primaryTextColor': '#fff',
-      'primaryBorderColor': '#141450',
-      'lineColor': '#33CCCC',
-      'secondaryColor': '#141450',
-      'tertiaryColor': '#33CCCC'
-    }
-  }
-}%%
 flowchart LR
     A(IN) --> B[AGENT 1]
     B --> C[AGENT 2]
@@ -24,28 +10,11 @@ flowchart LR
     D --> E(OUT)
 ```
 
-Declare agents
+Use this flow to chain multiple steps where output of one step becomes input for the next.
 
-```typescript
-const translationAgent = agent({
-  model: openai('gpt-4o'),
-  system: 'You are a translation agent...',
-})
+<CodeGroup>
 
-const grammarAgent = agent({
-  model: openai('gpt-4o'),
-  system: 'You are a grammar agent...',
-})
-
-const summaryAgent = agent({
-  model: openai('gpt-4o'),
-  system: 'You are a summary agent...',
-})
-```
-
-Declare flow
-
-```typescript
+```ts flow.ts
 const translateFlow = sequence([
   {
     agent: 'translationAgent',
@@ -62,9 +31,24 @@ const translateFlow = sequence([
 ])
 ```
 
-Execute
+```ts agents.ts
+const translationAgent = agent({
+  model: openai('gpt-4o'),
+  system: 'You are a translation agent...',
+})
 
-```typescript
+const grammarAgent = agent({
+  model: openai('gpt-4o'),
+  system: 'You are a grammar agent...',
+})
+
+const summaryAgent = agent({
+  model: openai('gpt-4o'),
+  system: 'You are a summary agent...',
+})
+```
+
+```ts main.ts
 execute(translateFlow, {
   agents: {
     translationAgent,
@@ -73,3 +57,6 @@ execute(translateFlow, {
   }
 })
 ```
+
+</CodeGroup>
+

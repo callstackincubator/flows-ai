@@ -1,22 +1,8 @@
 ---
 title: 'One of'
-description: 'How to use routing flow'
 ---
 
 ```mermaid
-%%{
-  init: {
-    'theme': 'base',
-    'themeVariables': {
-      'primaryColor': '#8232ff',
-      'primaryTextColor': '#fff',
-      'primaryBorderColor': '#141450',
-      'lineColor': '#33CCCC',
-      'secondaryColor': '#141450',
-      'tertiaryColor': '#33CCCC'
-    }
-  }
-}%%
 flowchart LR
     A("IN") --> B["ROUTING AGENT"]
     B -.-> C["AGENT 1"] & D["AGENT 2"]
@@ -29,28 +15,11 @@ flowchart LR
     style D stroke-width:2px,stroke-dasharray: 2
 ```
 
-Declare agents
+Use this flow to dynamically route to different execution paths based on conditions.
 
-```typescript
-const germanAgent = agent({
-  model: openai('gpt-4o'),
-  system: 'You are a german translation agent...',
-})
+<CodeGroup>
 
-const polishAgent = agent({
-  model: openai('gpt-4o'),
-  system: 'You are a polish translation agent...',
-})
-
-const spanishAgent = agent({
-  model: openai('gpt-4o'),
-  system: 'You are a spanish translation agent...',
-})
-```
-
-Declare flow
-
-```typescript
+```ts flow.ts
 const oneOfTranslationFlow = oneOf([
   {
     when: 'The article is in German',
@@ -76,9 +45,24 @@ const oneOfTranslationFlow = oneOf([
 ])
 ```
 
-Execute flow
+```ts agents.ts
+const germanAgent = agent({
+  model: openai('gpt-4o'),
+  system: 'You are a german translation agent...',
+})
 
-```typescript
+const polishAgent = agent({
+  model: openai('gpt-4o'),
+  system: 'You are a polish translation agent...',
+})
+
+const spanishAgent = agent({
+  model: openai('gpt-4o'),
+  system: 'You are a spanish translation agent...',
+})
+```
+
+```ts main.ts
 execute(oneOfTranslationFlow, {
   agents: {
     germanAgent,
@@ -88,3 +72,5 @@ execute(oneOfTranslationFlow, {
   input: 'The article content to translate...'
 })
 ```
+
+</CodeGroup>

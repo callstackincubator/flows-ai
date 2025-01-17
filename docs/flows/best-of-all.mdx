@@ -1,22 +1,8 @@
 ---
 title: 'Best of all'
-description: 'How to use best of all flow'
 ---
 
 ```mermaid
-%%{
-  init: {
-    'theme': 'base',
-    'themeVariables': {
-      'primaryColor': '#8232ff',
-      'primaryTextColor': '#fff',
-      'primaryBorderColor': '#141450',
-      'lineColor': '#33CCCC',
-      'secondaryColor': '#141450',
-      'tertiaryColor': '#33CCCC'
-    }
-  }
-}%%
 flowchart LR
     IN("IN") --> A["Agent 1"]
     IN --> B["Agent 2"]
@@ -27,18 +13,11 @@ flowchart LR
     EVAL --> OUT
 ```
 
-Declare agents
+Use this flow to generate multiple alternatives and pick the best one.
 
-```ts
-const responseAgent =  agent({
-  model: openai('gpt-4o'),
-  system: 'You are consumer relations specialist...',
-})
-```
+<CodeGroup>
 
-Declare flow
-
-```ts
+```ts flow.ts
 const bestOfFlow = bestOfAll({
   criteria: 'Pick the response that is most helpful and concise'
   input: [
@@ -54,12 +33,19 @@ const bestOfFlow = bestOfAll({
 })
 ```
 
-Execute flow
+```ts agents.ts
+const responseAgent =  agent({
+  model: openai('gpt-4o'),
+  system: 'You are consumer relations specialist...',
+})
+```
 
-```ts
+```ts main.ts
 execute(bestOfFlow, {
   agents: {
     responseAgent
   }
 })
 ```
+
+</CodeGroup>
