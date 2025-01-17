@@ -1,0 +1,55 @@
+---
+title: 'Evaluator'
+description: 'How to use evaluator flow'
+---
+
+```mermaid
+%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {
+      'primaryColor': '#8232ff',
+      'primaryTextColor': '#fff',
+      'primaryBorderColor': '#141450',
+      'lineColor': '#33CCCC',
+      'secondaryColor': '#141450',
+      'tertiaryColor': '#33CCCC'
+    }
+  }
+}%%
+flowchart LR
+    A("IN") --> B["OPTIMIZER"]
+    B -.-> C["EVALUATOR"]
+    C -.-> B
+    C -.-> F("OUT")
+```
+
+Declare agents
+```typescript
+const writingAgent =  agent({
+  model: openai('gpt-4'),
+  system: 'You are a writer...',
+})
+```
+
+Declare flow
+```typescript
+const optimizeFlow = evaluate({
+  name: 'improveWriting',
+  input: {
+    agent: 'writingAgent',
+    input: 'Write a compelling story'
+  },
+  criteria: 'The story should be engaging, have a clear plot, and be free of grammar errors',
+  max_iterations: 3
+})
+```
+
+Execute
+```typescript
+execute(optimizeFlow, {
+  agents: {
+    writingAgent
+  }
+})
+```

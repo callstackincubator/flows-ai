@@ -1,0 +1,63 @@
+---
+title: 'Best of all'
+description: 'How to use best of all flow'
+---
+
+```mermaid
+%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {
+      'primaryColor': '#8232ff',
+      'primaryTextColor': '#fff',
+      'primaryBorderColor': '#141450',
+      'lineColor': '#33CCCC',
+      'secondaryColor': '#141450',
+      'tertiaryColor': '#33CCCC'
+    }
+  }
+}%%
+flowchart LR
+    IN("IN") --> A["Agent 1"]
+    IN --> B["Agent 2"]
+    IN --> C["Agent 3"]
+    A --> EVAL["Evaluator"]
+    B -.-> EVAL
+    C -.-> EVAL
+    EVAL --> OUT
+```
+
+Declare agents
+```typescript
+const responseAgent =  agent({
+  model: openai('gpt-4'),
+  system: 'You are consumer relations specialist...',
+})
+```
+
+Declare flow
+```typescript
+const bestOfFlow = bestOfAll({
+  name: 'generateBestResponse',
+  criteria: 'Pick the response that is most helpful and concise'
+  input: [
+    {
+      agent: 'responseAgent',
+      input: 'Generate response version 1'
+    },
+    {
+      agent: 'responseAgent',
+      input: 'Generate response version 2'
+    }
+  ],
+})
+```
+
+Execute
+```typescript
+execute(bestOfFlow, {
+  agents: {
+    responseAgent
+  }
+})
+```
