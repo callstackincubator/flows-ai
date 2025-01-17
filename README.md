@@ -20,7 +20,7 @@ On top of that, we keep our library simple and functional, without any classes o
 
 First, you need to define your agents.
 
-```typescript
+```ts
 const translationAgent = agent({
   model: openai('gpt-4o'),
   system: 'You are a translation agent...',
@@ -56,39 +56,7 @@ execute(translateFlow, {
 
 In this example, we will first translate the text to English and then summarize it.
 
-Jump to [next section](#available-workflow-patterns) to see other available composition patterns, such as parallelism or conditional execution.
-
-## Design
-
-The core architecture is built around the concept of a **Flow** - a simple, composable structure that can be infinitely nested.
-
-In the examples below, you'll see flows defined as JSON-like objects. Each flow has an `agent` (what to execute), `input` (what to process), and optional properties specific to that agent. 
-
-The `input` can be a string with instructions (if the agent is a simple LLM call), another flow or an array of flows (if agent is a workflow).
-
-This flexibility allows for infinite composition. When a flow is executed, each agent receives its complete configuration as a payload and can decide how to handle it.
-
-## Available Workflow Patterns
-
-The patterns are inspired by Anthropic's agent patterns. You can learn more about them [here](https://www.anthropic.com/research/building-effective-agents).
-
-## Running Workflows
-
-Use the `execute` function to run a workflow:
-
-```typescript
-const response = await execute(flow, {
-  agents: {
-    // Your custom agents
-    translationAgent,
-    summaryAgent,
-    // etc...
-  },
-  onFlowStart: (flow) => {
-    console.log('Starting flow:', flow.name)
-  }
-})
-```
+Learn more about this and other flows no our website: [flows-ai.callstack.com](https://flows-ai.callstack.com)
 
 ## License
 
