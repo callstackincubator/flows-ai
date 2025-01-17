@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "baseUrl": "./",
     "target": "esnext",
     "module": "NodeNext",
     "moduleResolution": "nodenext",
@@ -11,8 +12,8 @@
     "outDir": "dist",
     "resolveJsonModule": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "./src/jsx",
+    "jsxImportSource": "src/jsx",
     "customConditions": ["bun"],
   },
-  "include": ["./src"]
+  "include": ["./src", "example/github.tsx", "global.d.ts"]
 }
