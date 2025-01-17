@@ -11,6 +11,15 @@
       },
       "require": "./dist/index.cjs",
       "import": "./dist/index.js"
+    },
+    "./flows": {
+      "import": "./dist/flows.js",
+      "require": "./dist/flows.cjs",
+      "types": {
+        "import": "./dist/flows.d.ts",
+        "require": "./dist/flows.d.cts"
+      },
+      "bun": "./src/flows.ts"
     }
   },
   "dependencies": {

@@ -2,7 +2,7 @@ import { openai } from '@ai-sdk/openai'
 import { tool } from 'ai'
 import z from 'zod'
 
-import { forEach, parallel, routing, sequence } from '../src/flows.js'
+import { forEach, oneOf, parallel, sequence } from '../src/flows.js'
 import { agent, execute } from '../src/index.js'
 
 const communicationAgent = agent({
@@ -69,49 +69,44 @@ const userInputAgent = agent({
   },
 })
 
-const githubProjectHealthAnalysisFlow = sequence({
-  name: 'githubProjectHealthAnalysisFlow',
-  input: [
-    {
-      agent: 'userInputAgent',
-      name: 'getProjectName',
-      input: 'Get a valid Github project name in format "organization/project"',
-    },
-    {
-      agent: 'githubAgent',
-      name: 'getIssues',
-      input: 'Go to Github and get the top 3 most popular issues and number of open issues.',
-    },
-    forEach({
-      name: 'iterateOverIssues',
-      forEach: 'Github issue and total number of open issues',
-      input: parallel({
-        input: [
-          routing({
-            name: 'analyzeIssues',
-            input: [
-              {
-                agent: 'communicationAgent',
-                input: 'Write an email to the maintainer saying he is behind schedule.',
-                when: 'There are more than 500 open issues',
-              },
-              {
-                agent: 'communicationAgent',
-                input: 'Inform the maintainer that he is doing good job.',
-                when: 'There are less than 500 open issues',
-              },
-            ],
-          }),
-          {
+const githubProjectHealthAnalysisFlow = sequence([
+  {
+    agent: 'userInputAgent',
+    name: 'getProjectName',
+    input: 'Get a valid Github project name in format "organization/project"',
+  },
+  {
+    agent: 'githubAgent',
+    name: 'getIssues',
+    input: 'Go to Github and get the top 3 most popular issues and number of open issues.',
+  },
+  forEach({
+    item: 'Github issue and total number of open issues',
+    input: parallel([
+      oneOf([
+        {
+          when: 'There are more than 500 open issues',
+          input: {
             agent: 'communicationAgent',
-            name: 'informMaintainer',
-            input: 'Inform the maintainer about open issue.',
+            input: 'Write an email to the maintainer saying he is behind schedule.',
           },
-        ],
-      }),
-    }),
-  ],
-})
+        },
+        {
+          when: 'There are less than 500 open issues',
+          input: {
+            agent: 'communicationAgent',
+            input: 'Inform the maintainer that he is doing good job.',
+          },
+        },
+      ]),
+      {
+        agent: 'communicationAgent',
+        name: 'informMaintainer',
+        input: 'Inform the maintainer about open issue.',
+      },
+    ]),
+  }),
+])
 
 const response = await execute(githubProjectHealthAnalysisFlow, {
   agents: {
@@ -120,7 +115,9 @@ const response = await execute(githubProjectHealthAnalysisFlow, {
     communicationAgent,
   },
   onFlowStart: (flow) => {
-    console.log('Executing', flow.name)
+    if (flow.name) {
+      console.log('Executing', flow.name)
+    }
   },
 })
 

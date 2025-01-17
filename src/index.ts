@@ -2,31 +2,47 @@ import { openai } from '@ai-sdk/openai'
 import { generateObject, generateText } from 'ai'
 import { z } from 'zod'
 
+import {
+  BestOfFlowDefinition,
+  EvaluatorFlowDefinition,
+  ForEachFlowDefinition,
+  OneOfFlowDefinition,
+  ParallelFlowDefinition,
+  SequenceFlowDefinition,
+} from './flows.js'
+
+/**
+ * Helper type to hydrate the flow definition.
+ * This is what is done when we call `hydrate`.
+ */
+type Hydrated<T> = T extends object
+  ? {
+      [K in keyof T]: K extends 'agent' ? Agent<T> : Hydrated<T[K]>
+    }
+  : T
+
 /**
  * On a high-level, Flow is a very simple structure.
  *
  * It is an object with two properties:
  * - agent
  * - input
- *
- * It can also contain some other agent-specific properties.
- * Together, they form an agent payload.
  */
-export type FlowDefinition<T = string> = {
-  [key: string]: unknown
+export type FlowDefinition = {
+  [key: string]: any
   /**
    * Name of the agent that should be executed.
    */
-  agent: T
+  agent: string
   /**
-   * input for the agent.
+   * Input for the agent.
    *
    * For agents define with `agent` helper, input is a string.
    *
    * For other agents, input must be an object (nested flow definition)
    * or an array of objects (nested flow definitions).
    */
-  input: FlowDefinition<T> | FlowDefinition<T>[] | string
+  input: FlowDefinition | FlowDefinition[] | string
   /**
    * Optional name of the flow.
    */
@@ -39,15 +55,14 @@ export type FlowDefinition<T = string> = {
  * The difference here is that `agent` is now a function, instead of a string.
  * In the future, we will perform validation here.
  */
-export type Flow = FlowDefinition<Agent>
+export type Flow = Hydrated<FlowDefinition>
 
-// tbd: return type
-export type Agent<T = any> = (prompt: T, context: string) => Promise<any>
+type Agent<P = FlowDefinition> = (prompt: Hydrated<P>, context: string) => Promise<any>
 
 /**
  * Use this function to hydrate a flow definition.
  */
-function hydrate(definition: FlowDefinition<string>, agents: Record<string, Agent>): Flow {
+function hydrate(definition: FlowDefinition, agents: Record<string, Agent>): Flow {
   const agent = agents[definition.agent]
   if (!agent) {
     throw new Error(`Agent ${definition.agent} not found`)
@@ -73,22 +88,15 @@ function hydrate(definition: FlowDefinition<string>, agents: Record<string, Agen
   }
 }
 
-export function run({ agent, ...input }: Flow, context: string) {
-  return agent(input, context)
-}
-
-type UserDefinedAgentPayload = {
-  input: any
+export function run(flow: Flow, context: string) {
+  return flow.agent(flow, context)
 }
 
 /**
  * Helper function to create a user-defined agent that can then be referneced in a flow.
  * Like `generateText` in Vercel AI SDK, but we're taking care of `prompt`.
  */
-export function agent({
-  maxSteps = 10,
-  ...rest
-}: Parameters<typeof generateText>[0]): Agent<UserDefinedAgentPayload> {
+export function agent({ maxSteps = 10, ...rest }: Parameters<typeof generateText>[0]): Agent {
   return async ({ input }, context) => {
     const response = await generateText({
       ...rest,
@@ -102,17 +110,15 @@ export function agent({
   }
 }
 
-type BaseAgentPayload = {
-  input: Flow[]
-}
-
 /**
  * Use this agent to implement workflow where output of each step
  * is used as input for the next step.
  */
-const sequenceAgent: Agent<BaseAgentPayload> = async ({ input }, context) => {
+const sequenceAgent: Agent<SequenceFlowDefinition> = async ({ input }, context) => {
   let lastResult: string | undefined
   for (const step of input) {
+    // tbd: when nesting, this will produce a lot of "Here is the context" text.
+    // We need to resolve this in a better way, and trim the string.
     lastResult = await run(
       step,
       `
@@ -127,18 +133,14 @@ const sequenceAgent: Agent<BaseAgentPayload> = async ({ input }, context) => {
 /**
  * Use this agent to implement workflow where each step is executed in parallel.
  */
-const parallelAgent: Agent<BaseAgentPayload> = async ({ input }, context) => {
+const parallelAgent: Agent<ParallelFlowDefinition> = async ({ input }, context) => {
   return Promise.all(input.map((step) => run(step, context)))
-}
-
-type OneOfAgentPayload = {
-  input: (Flow & { when: string })[]
 }
 
 /**
  * Use this agent to implement workflow where you need to route execution based on a condition.
  */
-const oneOfAgent: Agent<OneOfAgentPayload> = async ({ input }, context) => {
+const oneOfAgent: Agent<OneOfFlowDefinition> = async ({ input, conditions }, context) => {
   const condition = await generateObject({
     model: openai('gpt-4o-mini'),
     system: `
@@ -147,7 +149,7 @@ const oneOfAgent: Agent<OneOfAgentPayload> = async ({ input }, context) => {
     `,
     prompt: `
       Here is the context: ${JSON.stringify(context)}
-      Here is the array of conditions: ${JSON.stringify(input.map((p) => p.when))}
+      Here is the array of conditions: ${JSON.stringify(conditions)}
     `,
     schema: z.object({
       index: z
@@ -162,17 +164,11 @@ const oneOfAgent: Agent<OneOfAgentPayload> = async ({ input }, context) => {
   return run(input[index], context)
 }
 
-type OptimizeAgentPayload = {
-  input: Flow
-  criteria: string
-  max_iterations?: number
-}
-
 /**
  * Use this agent to implement workflow where you need to evaluate a condition
  * and optimize the flow based on the result.
  */
-export const optimizeAgent: Agent<OptimizeAgentPayload> = async (
+export const optimizeAgent: Agent<EvaluatorFlowDefinition> = async (
   { input, criteria, max_iterations = 3 },
   context: string
 ) => {
@@ -215,16 +211,11 @@ export const optimizeAgent: Agent<OptimizeAgentPayload> = async (
   throw new Error('Max iterations reached')
 }
 
-type BestOfAllAgentPayload = {
-  input: Flow[]
-  criteria: string
-}
-
 /**
  * Use this agent to implement workflow where you need to pick the best result
  * from a list of results.
  */
-const bestOfAllAgent: Agent<BestOfAllAgentPayload> = async (
+const bestOfAllAgent: Agent<BestOfFlowDefinition> = async (
   { input, criteria },
   context: string
 ) => {
@@ -246,41 +237,40 @@ const bestOfAllAgent: Agent<BestOfAllAgentPayload> = async (
   return results[best.object.index]
 }
 
-type ForEachAgentPayload = {
-  input: Flow
-  forEach: string
-}
-
 /**
  * Use this agent to implement workflow where you need to loop over a list of steps.
  */
-const forEachAgent: Agent<ForEachAgentPayload> = async ({ input, forEach }, context) => {
+const forEachAgent: Agent<ForEachFlowDefinition> = async ({ input, item }, context) => {
   const response = await generateObject({
     model: openai('gpt-4o-mini'),
     system: `
-      You are a loop agent. You will be given a list of steps and a condition.
-      You will need to break the provided list of steps into smaller chunks.
-      Each step must satisfy provided description.
+      You are a loop agent. You will be given a list of items and a description.
+      You will need to break the provided list into an array of items.
+      Each item must satisfy provided description.
     `,
     prompt: `
       Here is the context: ${JSON.stringify(context)}
-      Here is the step description: ${forEach}
+      Here is the description of what each item in the list should be: ${item}
     `,
     schema: z.object({
-      steps: z.array(z.string()).describe('The steps to be executed.'),
+      items: z.array(z.string()).describe('The items to be executed.'),
     }),
   })
-  return await Promise.all(response.object.steps.map((step) => run(input, step)))
+  return await Promise.all(response.object.items.map((item) => run(input, item)))
 }
 
-const builtInAgents: Record<string, Agent> = {
+/**
+ * Built-in agents.
+ * While the type-casting isn't ideal, we need to unify the type of agents.
+ */
+const builtInAgents = {
   sequenceAgent,
   parallelAgent,
   oneOfAgent,
   bestOfAllAgent,
   optimizeAgent,
   forEachAgent,
-}
+} as any as Record<string, Agent>
 
 type ExecuteOptions = {
   /**
@@ -298,11 +288,12 @@ type ExecuteOptions = {
   onFlowFinish?: (flow: Flow, result: any) => void
 }
 
-export async function execute(definition: FlowDefinition<string>, opts: ExecuteOptions) {
+export async function execute(definition: FlowDefinition, opts: ExecuteOptions) {
   let agents = {
     ...builtInAgents,
     ...opts.agents,
   }
+
   /**
    * When provided, we annotate each agent with a function that will call the
    * onFlowStart callback before it gets executed.
@@ -311,7 +302,7 @@ export async function execute(definition: FlowDefinition<string>, opts: ExecuteO
     agents = Object.fromEntries(
       Object.entries(agents).map(([key, agent]) => [
         key,
-        async (flow, context) => {
+        async (flow, context: string) => {
           opts.onFlowStart?.(flow, context)
           const result = await agent(flow, context)
           opts.onFlowFinish?.(flow, result)

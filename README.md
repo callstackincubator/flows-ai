@@ -35,18 +35,16 @@ const summaryAgent = agent({
 Then, you can define and run your workflow.
 
 ```ts
-const translateFlow = sequence({
-  input: [
-    {
-      agent: 'translationAgent',
-      input: 'Translate this text to English',
-    },
-    {
-      agent: 'summaryAgent',
-      input: 'Now summarize the translated text',
-    }
-  ]
-})
+const translateFlow = sequence([
+  {
+    agent: 'translationAgent',
+    input: 'Translate this text to English',
+  },
+  {
+    agent: 'summaryAgent',
+    input: 'Now summarize the translated text',
+  }
+])
 
 execute(translateFlow, {
   agents: {
@@ -82,19 +80,16 @@ The patterns are inspired by Anthropic's agent patterns. You can learn more abou
 Use the `sequenceAgent` to chain multiple steps where output of one step becomes input for the next.
 
 ```typescript
-const translateAndSummarizeFlow = sequence({
-  name: 'translateAndSummarize',
-  input: [
-    {
-      agent: 'translationAgent',
-      input: 'Translate this text to English',
-    },
-    {
-      agent: 'summaryAgent',
-      input: 'Now summarize the translated text',
-    }
-  ]
-})
+const translateAndSummarizeFlow = sequence([
+  {
+    agent: 'translationAgent',
+    input: 'Translate this text to English',
+  },
+  {
+    agent: 'summaryAgent',
+    input: 'Now summarize the translated text',
+  }
+])
 
 execute(translateAndSummarizeFlow, {
   agents: {
@@ -109,21 +104,22 @@ execute(translateAndSummarizeFlow, {
 Use the `oneOfAgent` to dynamically route to different execution paths based on conditions.
 
 ```typescript
-const routingFlow = routing({
-  name: 'routeBasedOnSentiment',
-  input: [
-    {
+const routingFlow = oneOf([
+  {
+    when: 'The sentiment is positive',
+    input: {
       agent: 'positiveResponseAgent',
-      input: 'Generate positive response',
-      when: 'The sentiment is positive'
-    },
-    {
-      agent: 'negativeResponseAgent',
-      input: 'Generate constructive feedback',
-      when: 'The sentiment is negative'
+      input: 'Generate positive response'
     }
-  ]
-})
+  },
+  {
+    when: 'The sentiment is negative',
+    input: {
+      agent: 'negativeResponseAgent',
+      input: 'Generate constructive feedback'
+    }
+  }
+])
 
 execute(routingFlow, {
   agents: {
@@ -138,23 +134,20 @@ execute(routingFlow, {
 Use the `parallelAgent` to run multiple steps concurrently and aggregate results.
 
 ```typescript
-const parallelAnalysisFlow = parallel({
-  name: 'analyzeFromMultipleAngles',
-  input: [
-    {
-      agent: 'sentimentAnalysisAgent',
-      input: 'Analyze sentiment of the text'
-    },
-    {
-      agent: 'topicExtractionAgent',
-      input: 'Extract main topics from the text'
-    },
-    {
-      agent: 'keywordExtractionAgent',
-      input: 'Extract key phrases from the text'
-    }
-  ]
-})
+const parallelAnalysisFlow = parallel([
+  {
+    agent: 'sentimentAnalysisAgent',
+    input: 'Analyze sentiment of the text'
+  },
+  {
+    agent: 'topicExtractionAgent',
+    input: 'Extract main topics from the text'
+  },
+  {
+    agent: 'keywordExtractionAgent',
+    input: 'Extract key phrases from the text'
+  }
+])
 
 execute(parallelAnalysisFlow, {
   agents: {
@@ -170,8 +163,7 @@ execute(parallelAnalysisFlow, {
 Use the `optimizeAgent` to iteratively improve results based on specific criteria.
 
 ```typescript
-const optimizeFlow = evaluate({
-  name: 'improveWriting',
+const optimizeFlow = evaluator({
   input: {
     agent: 'writingAgent',
     input: 'Write a compelling story'
@@ -193,8 +185,7 @@ Use the `bestOfAllAgent` to generate multiple alternatives and pick the best one
 
 ```typescript
 const bestOfFlow = bestOfAll({
-  name: 'generateBestResponse',
-  criteria: 'Pick the response that is most helpful and concise'
+  criteria: 'Pick the response that is most helpful and concise',
   input: [
     {
       agent: 'responseAgent',
@@ -219,25 +210,21 @@ execute(bestOfFlow, {
 Use the `forEachAgent` to process a collection of items.
 
 ```typescript
-const processGithubIssuesFlow = forEach({
-  input: [
-    {
-      agent: 'githubAgent',
-      name: 'getIssues',
-      input: 'Go to Github and get the top 3 most popular issues and number of open issues.',
-    },
-    forEachFlow({
-      name: 'iterateOverIssues',
-      forEach: 'Github issue and total number of open issues',
-      input: {
-        agent: 'responseAgent',
-        input: 'Send an email to the maintainer.',
-      },
-    })
-  ]
-})
+const processGithubIssuesFlow = sequence([
+  {
+    agent: 'githubAgent',
+    input: 'Go to Github and get the top 3 most popular issues and number of open issues.',
+  },
+  forEach({
+    item: 'Github issue and total number of open issues',
+    input: {
+      agent: 'responseAgent',
+      input: 'Send an email to the maintainer.',
+    }
+  })
+])
 
-execute(processGithubIssues, {
+execute(processGithubIssuesFlow, {
   agents: {
     githubAgent,
     responseAgent
