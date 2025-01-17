@@ -1,39 +1,38 @@
-import { execute } from '../src/index.js'
-import { communicationAgent, githubAgent, userInputAgent } from './github/agents.js'
-
+import { communicationAgent, githubAgent, userInputAgent } from './example/github/agents.js'
+import { execute } from './src/index.js'
 
 const githubWorkflow = (
-  <SequenceAgent name="githubProjectHealthAnalysisFlow">
-    <UserInputAgent
+  <sequence name="githubProjectHealthAnalysisFlow">
+    <userInputAgent
       name="getProjectName"
       input='Get a valid Github project name in format "organization/project"'
     />
 
-    <GithubAgent
+    <githubAgent
       name="getIssues"
       input="Go to Github and get the top 3 most popular issues and number of open issues."
     />
 
-    <ForEachAgent name="iterateOverIssues" forEach="Github issue and total number of open issues">
-      <ParallelAgent>
-        <OneOfAgent name="analyzeIssues">
-          <CommunicationAgent
+    <forEach name="iterateOverIssues" forEach="Github issue and total number of open issues">
+      <parallel>
+        <routing name="analyzeIssues">
+          <communicationAgent
             input="Write an email to the maintainer saying he is behind schedule."
             when="There are more than 500 open issues"
           />
-          <CommunicationAgent
+          <communicationAgent
             input="Inform the maintainer that he is doing good job."
             when="There are less than 500 open issues"
           />
-        </OneOfAgent>
+        </routing>
 
-        <CommunicationAgent
+        <communicationAgent
           name="informMaintainer"
           input="Inform the maintainer about open issue."
         />
-      </ParallelAgent>
-    </ForEachAgent>
-  </SequenceAgent>
+      </parallel>
+    </forEach>
+  </sequence>
 )
 
 console.log(githubWorkflow)

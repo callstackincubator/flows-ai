@@ -10,9 +10,9 @@
     "esModuleInterop": true,
     "outDir": "dist",
     "resolveJsonModule": true,
-    "jsx": "react",                // or "react-jsx"
-    "jsxFactory": "createElement", // crucial    
-    "customConditions": ["bun"]
+    "jsx": "react-jsx",
+    "jsxImportSource": "./src/jsx",
+    "customConditions": ["bun"],
   },
   "include": ["./src"]
 }
