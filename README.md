@@ -5,7 +5,7 @@ A lightweight, type-safe AI workflow orchestrator inspired by Anthropic's agent 
 ## Installation
 
 ```bash
-npm install workflows-ai
+npm install flows-ai
 ```
 
 ## Motivation
