@@ -5,18 +5,23 @@ import {
   Background,
   Edge,
   Node,
-  Panel,
   ReactFlow,
   useEdgesState,
+  useNodesInitialized,
   useNodesState,
   useReactFlow,
 } from '@xyflow/react'
 import { FlowDefinition } from 'flows-ai'
-import { useCallback, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 
 // tbd: let's keep it during testing phase
 // going forward, we will have to do something such as drag&drop or loader
 import { githubProjectHealthAnalysisFlow } from '../../../example/github.ts'
+import AgentNode from './AgentNode.tsx'
+
+const noteTypes = {
+  agent: AgentNode,
+}
 
 const getLayoutedElements = (nodes: Node[], edges: Edge[], direction: string) => {
   const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}))
@@ -61,9 +66,11 @@ function generateNodesAndEdges(
   const currentNode: Node = {
     id: `${nodes.length}-${flow.agent}`,
     data: {
-      label: flow.agent,
+      label: `${flow.agent}${flow.name ? `\n${flow.name}` : ''}`,
       agent: flow.agent,
+      name: flow.name,
     },
+    type: 'agent',
     position: {
       x: 0,
       y: 0,
@@ -102,11 +109,13 @@ function generateNodesAndEdges(
         generateNodesAndEdges(innerFlow, nodes, edges, currentNode)
       }
     }
+
+    return { nodes, edges }
   }
 
   // Handle inner workflow
   if (!Array.isArray(flow.input)) {
-    generateNodesAndEdges(flow.input, nodes, edges, currentNode)
+    return generateNodesAndEdges(flow.input, nodes, edges, currentNode)
   }
 
   // Failsafe
@@ -117,7 +126,8 @@ function generateNodesAndEdges(
 }
 
 function Flow() {
-  const { fitView } = useReactFlow()
+  const { fitView, getNodes, getEdges } = useReactFlow()
+  const nodesInitialized = useNodesInitialized()
 
   const { nodes: initialNodes, edges: initialEdges } = useMemo(
     () => generateNodesAndEdges(githubProjectHealthAnalysisFlow),
@@ -127,10 +137,9 @@ function Flow() {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
 
-  const onLayout = useCallback(
-    (direction: string) => {
-      console.log(nodes)
-      const layouted = getLayoutedElements(nodes, edges, direction)
+  useEffect(() => {
+    if (nodesInitialized) {
+      const layouted = getLayoutedElements(getNodes(), getEdges(), 'TB')
 
       setNodes([...layouted.nodes])
       setEdges([...layouted.edges])
@@ -138,9 +147,8 @@ function Flow() {
       window.requestAnimationFrame(() => {
         fitView()
       })
-    },
-    [nodes, edges]
-  )
+    }
+  }, [nodesInitialized])
 
   return (
     <ReactFlow
@@ -149,11 +157,8 @@ function Flow() {
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       fitView
+      nodeTypes={noteTypes}
     >
-      <Panel position="top-right">
-        <button onClick={() => onLayout('TB')}>vertical layout</button>
-        <button onClick={() => onLayout('LR')}>horizontal layout</button>
-      </Panel>
       <Background />
     </ReactFlow>
   )
