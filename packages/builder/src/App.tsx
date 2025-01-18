@@ -1,104 +1,78 @@
 import '@xyflow/react/dist/style.css'
 
-import { Background, ReactFlow } from '@xyflow/react'
+import { Background, Edge, Node, ReactFlow } from '@xyflow/react'
 import { FlowDefinition } from 'flows-ai'
+import { useMemo } from 'react'
 
 // tbd: let's keep it during testing phase
 // going forward, we will have to do something such as drag&drop or loader
 import { githubProjectHealthAnalysisFlow } from '../../../example/github.ts'
-
-type Node = {
-  id: string
-  data: { label: string }
-  type?: 'input'
-}
-
-type Edge = {
-  id: `${string}-${string}`
-  source: string
-  target: string
-}
 
 /**
  * Recursively generates nodes and edges for a flow visualization.
  */
 function generateNodesAndEdges(
   flow: FlowDefinition,
-  parentId?: string
+  nodes: Node[] = [],
+  edges: Edge[] = [],
+  parent?: Node
 ): { nodes: Node[]; edges: Edge[] } {
-  /**
-   * Create current node
-   */
-  const currentNode = {
-    id: flow.name || `node-${Math.random()}`,
-    data: { label: flow.name || flow.agent },
-    type: parentId ? undefined : 'input',
-  } satisfies Node
+  const parentId = parent?.id || nodes.at(-1)?.id
 
-  /**
-   * If input is a string, this is a leaf node.
-   */
-  if (typeof flow.input === 'string') {
-    return { nodes: [currentNode], edges: [] }
+  const sameParentCount = nodes.filter((node) => node.parentId === parentId).length
+
+  const currentNode: Node = {
+    id: `${nodes.length}-${flow.agent}`,
+    data: {
+      label: flow.agent,
+      agent: flow.agent,
+    },
+    parentId,
+    position: {
+      x: sameParentCount ? sameParentCount * 70 + 100 : 0,
+      y: parentId ? 70 : 0,
+    },
   }
 
-  const inputs = Array.isArray(flow.input) ? flow.input : [flow.input]
+  nodes.push(currentNode)
 
-  /**
-   * We do not need to display the following agents in the UI.
-   * Instead, we will connect their nodes directly with whatever is preceding them.
-   */
-  if (['sequenceAgent', 'parallelAgent'].includes(flow.agent)) {
-    let parentNodes = [currentNode.id]
+  if (parentId) {
+    edges.push({
+      id: `${currentNode.id}-${parentId}`,
+      source: parentId,
+      target: currentNode.id,
+    })
+  }
 
-    const nodes: Node[] = [currentNode]
-    const edges: Edge[] = []
-
-    for (const subFlow of inputs) {
-      const subGraph = generateNodesAndEdges(subFlow, currentNode.id)
-
-      nodes.push(...subGraph.nodes)
-      edges.push(...subGraph.edges)
-
-      for (const parentNode of parentNodes) {
-        edges.push({
-          id: `${parentNode}-${subGraph.nodes[0].id}`,
-          source: parentNode,
-          target: subGraph.nodes[0].id,
-        })
-      }
-
-      if (flow.agent === 'sequenceAgent') {
-        parentNodes = [subGraph.nodes[subGraph.nodes.length - 1].id]
-      }
-
-      if (flow.agent === 'parallelAgent') {
-        parentNodes = subGraph.nodes.map((node) => node.id)
-      }
-    }
-
+  // Last node, stop generating
+  if (typeof flow.input === 'string') {
     return {
       nodes,
       edges,
     }
   }
 
-  const nodes: Node[] = [currentNode]
-  const edges: Edge[] = []
-
-  for (const subFlow of inputs) {
-    const subGraph = generateNodesAndEdges(subFlow, currentNode.id)
-
-    nodes.push(...subGraph.nodes)
-    edges.push(...subGraph.edges)
-
-    edges.push({
-      id: `${currentNode.id}-${subGraph.nodes[0].id}`,
-      source: currentNode.id,
-      target: subGraph.nodes[0].id,
-    })
+  // Handle arrays of workflows
+  if (Array.isArray(flow.input)) {
+    // Put nodes in sequence
+    if (currentNode.data['agent'] === 'sequenceAgent') {
+      for (const innerFlow of flow.input) {
+        generateNodesAndEdges(innerFlow, nodes, edges)
+      }
+    } else {
+      // Put nodes parallel
+      for (const innerFlow of flow.input) {
+        generateNodesAndEdges(innerFlow, nodes, edges, currentNode)
+      }
+    }
   }
 
+  // Handle inner workflow
+  if (!Array.isArray(flow.input)) {
+    generateNodesAndEdges(flow.input, nodes, edges, currentNode)
+  }
+
+  // Failsafe
   return {
     nodes,
     edges,
@@ -106,7 +80,7 @@ function generateNodesAndEdges(
 }
 
 function Flow() {
-  const { nodes, edges } = generateNodesAndEdges(githubProjectHealthAnalysisFlow)
+  const { nodes, edges } = useMemo(() => generateNodesAndEdges(githubProjectHealthAnalysisFlow), [])
 
   return (
     <div style={{ height: '100vh', width: '100vw' }}>
