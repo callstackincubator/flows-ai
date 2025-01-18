@@ -1,0 +1,59 @@
+{
+  "name": "flows-ai",
+  "version": "0.1.3",
+  "type": "module",
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
+    },
+    "./flows": {
+      "import": "./dist/flows.js",
+      "require": "./dist/flows.cjs",
+      "types": {
+        "import": "./dist/flows.d.ts",
+        "require": "./dist/flows.d.cts"
+      },
+      "bun": "./src/flows.ts"
+    }
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^1.0.19",
+    "ai": "^4.0.36",
+    "zod": "^3.24.1"
+  },
+  "scripts": {
+    "prepare": "bun run build",
+    "build": "tsup-node"
+  },
+  "author": "Mike Grabowski <grabbou@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/callstackincubator/flows-ai.git",
+    "directory": "packages/flows-ai"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "ai",
+    "ai agents",
+    "ai tools",
+    "ai workflows",
+    "ai sdk"
+  ],
+  "files": [
+    "dist",
+    "src",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=22"
+  }
+}

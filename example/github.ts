@@ -1,9 +1,8 @@
 import { openai } from '@ai-sdk/openai'
 import { tool } from 'ai'
+import { agent, execute } from 'flows-ai'
+import { forEach, oneOf, parallel, sequence } from 'flows-ai/flows'
 import z from 'zod'
-
-import { forEach, oneOf, parallel, sequence } from '../src/flows.js'
-import { agent, execute } from '../src/index.js'
 
 const communicationAgent = agent({
   model: openai('gpt-4o'),
@@ -69,7 +68,7 @@ const userInputAgent = agent({
   },
 })
 
-const githubProjectHealthAnalysisFlow = sequence([
+export const githubProjectHealthAnalysisFlow = sequence([
   {
     agent: 'userInputAgent',
     name: 'getProjectName',
@@ -108,17 +107,17 @@ const githubProjectHealthAnalysisFlow = sequence([
   }),
 ])
 
-const response = await execute(githubProjectHealthAnalysisFlow, {
-  agents: {
-    userInputAgent,
-    githubAgent,
-    communicationAgent,
-  },
-  onFlowStart: (flow) => {
-    if (flow.name) {
-      console.log('Executing', flow.name)
-    }
-  },
-})
+// const response = await execute(githubProjectHealthAnalysisFlow, {
+//   agents: {
+//     userInputAgent,
+//     githubAgent,
+//     communicationAgent,
+//   },
+//   onFlowStart: (flow) => {
+//     if (flow.name) {
+//       console.log('Executing', flow.name)
+//     }
+//   },
+// })
 
-console.log('Received response', response)
+// console.log('Received response', response)

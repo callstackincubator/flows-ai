@@ -12,5 +12,5 @@
     "resolveJsonModule": true,
     "customConditions": ["bun"]
   },
-  "include": ["./src"]
+  "include": ["packages/flows-ai/src"]
 }

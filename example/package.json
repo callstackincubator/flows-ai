@@ -1,0 +1,15 @@
+{
+  "name": "@flows-ai/example",
+  "private": true,
+  "devDependencies": {
+    "@clack/prompts": "^0.9.1",
+    "flows-ai": "workspace:*"
+  },
+  "author": "Mike Grabowski <grabbou@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/callstackincubator/workflows-ai.git",
+    "directory": "example"
+  }
+}
