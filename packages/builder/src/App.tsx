@@ -110,6 +110,7 @@ function Flow() {
 
   return (
     <div style={{ height: '100vh', width: '100vw' }}>
+      {/* @ts-ignore */}
       <ReactFlow nodes={nodes} edges={edges}>
         <Background />
       </ReactFlow>

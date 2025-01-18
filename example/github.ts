@@ -107,17 +107,17 @@ export const githubProjectHealthAnalysisFlow = sequence([
   }),
 ])
 
-// const response = await execute(githubProjectHealthAnalysisFlow, {
-//   agents: {
-//     userInputAgent,
-//     githubAgent,
-//     communicationAgent,
-//   },
-//   onFlowStart: (flow) => {
-//     if (flow.name) {
-//       console.log('Executing', flow.name)
-//     }
-//   },
-// })
+const response = await execute(githubProjectHealthAnalysisFlow, {
+  agents: {
+    userInputAgent,
+    githubAgent,
+    communicationAgent,
+  },
+  onFlowStart: (flow) => {
+    if (flow.name) {
+      console.log('Executing', flow.name)
+    }
+  },
+})
 
-// console.log('Received response', response)
+console.log('Received response', response)
