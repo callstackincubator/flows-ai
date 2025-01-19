@@ -2,6 +2,9 @@
 title: 'One of'
 ---
 
+import { Code } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 ```mermaid
 flowchart LR
     A("IN") --> B["ROUTING AGENT"]
@@ -17,60 +20,57 @@ flowchart LR
 
 Use this flow to dynamically route to different execution paths based on conditions.
 
-<CodeGroup>
+<Tabs>
+  <TabItem label="flow.ts">
+    ```ts
+    import * as agents from './agents.ts'
 
-```ts flow.ts
-const oneOfTranslationFlow = oneOf([
-  {
-    when: 'The article is in German',
-    input: {
-      agent: 'germanAgent',
-      input: 'Translate the article to English'
-    }
-  },
-  {
-    when: 'The article is in Polish',
-    input: {
-      agent: 'polishAgent',
-      input: 'Translate the article to English'
-    }
-  },
-  {
-    when: 'The article is in Spanish',
-    input: {
-      agent: 'spanishAgent',
-      input: 'Translate the article to English'
-    }
-  }
-])
-```
+    export const oneOfTranslationFlow = oneOf([
+      {
+        when: 'The article is in German',
+        input: {
+          agent: 'germanAgent',
+          input: 'Translate the article to English'
+        }
+      },
+      {
+        when: 'The article is in Polish',
+        input: {
+          agent: 'polishAgent',
+          input: 'Translate the article to English'
+        }
+      },
+      {
+        when: 'The article is in Spanish',
+        input: {
+          agent: 'spanishAgent',
+          input: 'Translate the article to English'
+        }
+      }
+    ])
 
-```ts agents.ts
-const germanAgent = agent({
-  model: openai('gpt-4o'),
-  system: 'You are a german translation agent...',
-})
+    execute(oneOfTranslationFlow, {
+      agents,
+      input: 'The article content to translate...'
+    })
+    ```
+  </TabItem>
+  <TabItem label="agents.ts">
+    ```ts
+    export const germanAgent = agent({
+      model: openai('gpt-4o'),
+      system: 'You are a german translation agent...',
+    })
 
-const polishAgent = agent({
-  model: openai('gpt-4o'),
-  system: 'You are a polish translation agent...',
-})
+    export const polishAgent = agent({
+      model: openai('gpt-4o'),
+      system: 'You are a polish translation agent...',
+    })
 
-const spanishAgent = agent({
-  model: openai('gpt-4o'),
-  system: 'You are a spanish translation agent...',
-})
-```
-
-```ts main.ts
-execute(oneOfTranslationFlow, {
-  agents: {
-    germanAgent,
-    polishAgent,
-    spanishAgent
-  },
-  input: 'The article content to translate...'
-})
-```
-
-</CodeGroup>
+    export const spanishAgent = agent({
+      model: openai('gpt-4o'),
+      system: 'You are a spanish translation agent...',
+    })
+    ```
+  </TabItem>
+</Tabs>

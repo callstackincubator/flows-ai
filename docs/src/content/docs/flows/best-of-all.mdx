@@ -2,6 +2,9 @@
 title: 'Best of all'
 ---
 
+import { Code } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 ```mermaid
 flowchart LR
     IN("IN") --> A["Agent 1"]
@@ -15,37 +18,36 @@ flowchart LR
 
 Use this flow to generate multiple alternatives and pick the best one.
 
-<CodeGroup>
+<Tabs>
+  <TabItem label="flow.ts">
+    ```ts
+    import * as agents from './agents.ts'
 
-```ts flow.ts
-const bestOfFlow = bestOfAll({
-  criteria: 'Pick the response that is most helpful and concise'
-  input: [
-    {
-      agent: 'responseAgent',
-      input: 'Generate response version 1'
-    },
-    {
-      agent: 'responseAgent',
-      input: 'Generate response version 2'
-    }
-  ],
-})
-```
+    export const bestOfFlow = bestOfAll({
+      criteria: 'Pick the response that is most helpful and concise',
+      input: [
+        {
+          agent: 'responseAgent',
+          input: 'Generate response version 1'
+        },
+        {
+          agent: 'responseAgent',
+          input: 'Generate response version 2'
+        }
+      ],
+    })
 
-```ts agents.ts
-const responseAgent =  agent({
-  model: openai('gpt-4o'),
-  system: 'You are consumer relations specialist...',
-})
-```
-
-```ts main.ts
-execute(bestOfFlow, {
-  agents: {
-    responseAgent
-  }
-})
-```
-
-</CodeGroup>
+    execute(bestOfFlow, {
+      agents
+    })
+    ```
+  </TabItem>
+  <TabItem label="agents.ts">
+    ```ts
+    export const responseAgent = agent({
+      model: openai('gpt-4o'),
+      system: 'You are consumer relations specialist...',
+    })
+    ```
+  </TabItem>
+</Tabs>

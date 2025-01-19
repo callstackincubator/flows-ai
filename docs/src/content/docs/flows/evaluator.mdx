@@ -3,6 +3,9 @@ title: 'Evaluator'
 description: 'How to use evaluator flow'
 ---
 
+import { Code } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 ```mermaid
 flowchart LR
     A("IN") --> B["OPTIMIZER"]
@@ -13,32 +16,31 @@ flowchart LR
 
 Use this flow to iteratively improve results based on specific criteria.
 
-<CodeGroup>
+<Tabs>
+  <TabItem label="flow.ts">
+    ```ts
+    import * as agents from './agents.ts'
 
-```ts flow.ts
-const optimizeFlow = evaluate({
-  input: {
-    agent: 'writingAgent',
-    input: 'Write a compelling story'
-  },
-  criteria: 'The story should be engaging, have a clear plot, and be free of grammar errors',
-  max_iterations: 3
-})
-```
+    export const optimizeFlow = evaluate({
+      input: {
+        agent: 'writingAgent',
+        input: 'Write a compelling story'
+      },
+      criteria: 'The story should be engaging, have a clear plot, and be free of grammar errors',
+      max_iterations: 3
+    })
 
-```ts agents.ts
-const writingAgent =  agent({
-  model: openai('gpt-4o'),
-  system: 'You are a writer...',
-})
-```
-
-```ts main.ts
-execute(optimizeFlow, {
-  agents: {
-    writingAgent
-  }
-})
-```
-
-</CodeGroup>
+    execute(optimizeFlow, {
+      agents
+    })
+    ```
+  </TabItem>
+  <TabItem label="agents.ts">
+    ```ts
+    export const writingAgent = agent({
+      model: openai('gpt-4o'),
+      system: 'You are a writer...',
+    })
+    ```
+  </TabItem>
+</Tabs>

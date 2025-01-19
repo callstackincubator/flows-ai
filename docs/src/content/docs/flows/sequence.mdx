@@ -2,6 +2,9 @@
 title: Sequence
 ---
 
+import { Code } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
 ```mermaid
 flowchart LR
     A(IN) --> B[AGENT 1]
@@ -12,51 +15,48 @@ flowchart LR
 
 Use this flow to chain multiple steps where output of one step becomes input for the next.
 
-<CodeGroup>
+<Tabs>
+  <TabItem label="flow.ts">
+    ```ts
+    import * as agents from './agents.ts'
 
-```ts flow.ts
-const translateFlow = sequence([
-  {
-    agent: 'translationAgent',
-    input: 'Translate this text to English',
-  },
-  {
-    agent: 'grammarAgent',
-    input: 'Check for grammar errors',
-  },
-  {
-    agent: 'summaryAgent',
-    input: 'Now summarize the translated text',
-  }
-])
-```
+    export const translateFlow = sequence([
+      {
+        agent: 'translationAgent',
+        input: 'Translate this text to English',
+      },
+      {
+        agent: 'grammarAgent',
+        input: 'Check for grammar errors',
+      },
+      {
+        agent: 'summaryAgent',
+        input: 'Now summarize the translated text',
+      }
+    ])
 
-```ts agents.ts
-const translationAgent = agent({
-  model: openai('gpt-4o'),
-  system: 'You are a translation agent...',
-})
+    execute(translateFlow, {
+      agents
+    })
+    ```
+  </TabItem>
+  <TabItem label="agents.ts">
+    ```ts
+    export const translationAgent = agent({
+      model: openai('gpt-4o'),
+      system: 'You are a translation agent...',
+    })
 
-const grammarAgent = agent({
-  model: openai('gpt-4o'),
-  system: 'You are a grammar agent...',
-})
+    export const grammarAgent = agent({
+      model: openai('gpt-4o'),
+      system: 'You are a grammar agent...',
+    })
 
-const summaryAgent = agent({
-  model: openai('gpt-4o'),
-  system: 'You are a summary agent...',
-})
-```
-
-```ts main.ts
-execute(translateFlow, {
-  agents: {
-    translationAgent,
-    grammarAgent,
-    summaryAgent
-  }
-})
-```
-
-</CodeGroup>
+    export const summaryAgent = agent({
+      model: openai('gpt-4o'),
+      system: 'You are a summary agent...',
+    })
+    ```
+  </TabItem>
+</Tabs>
 
