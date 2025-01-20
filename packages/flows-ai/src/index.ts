@@ -1,5 +1,5 @@
 import { openai } from '@ai-sdk/openai'
-import { generateObject, generateText } from 'ai'
+import { generateObject, generateText, JSONValue } from 'ai'
 import { z } from 'zod'
 
 import {
@@ -57,7 +57,7 @@ export type FlowDefinition = {
  */
 export type Flow = Hydrated<FlowDefinition>
 
-type Agent<P = FlowDefinition> = (prompt: Hydrated<P>, context: string) => Promise<any>
+type Agent<P = FlowDefinition> = (prompt: Hydrated<P>, context: string) => Promise<JSONValue[]>
 
 /**
  * Use this function to hydrate a flow definition.
@@ -88,25 +88,48 @@ function hydrate(definition: FlowDefinition, agents: Record<string, Agent>): Flo
   }
 }
 
-export function run(flow: Flow, context: string) {
+export function run(flow: Flow, context: string): Promise<JSONValue[]> {
   return flow.agent(flow, context)
 }
+
+type TextAgentProps = Parameters<typeof generateText>[0]
+
+type ObjectAgentProps = TextAgentProps & { tools: undefined; schema: z.Schema }
 
 /**
  * Helper function to create a user-defined agent that can then be referneced in a flow.
  * Like `generateText` in Vercel AI SDK, but we're taking care of `prompt`.
  */
-export function agent({ maxSteps = 10, ...rest }: Parameters<typeof generateText>[0]): Agent {
-  return async ({ input }, context) => {
-    const response = await generateText({
-      ...rest,
-      maxSteps,
-      prompt: `
+export function agent(props: TextAgentProps | ObjectAgentProps): Agent {
+  if ('schema' in props) {
+    const objectAgentProps = props as ObjectAgentProps
+
+    return async ({ input }, context) => {
+      const response = await generateObject<z.ZodParsedType>({
+        ...objectAgentProps,
+        prompt: `
         ${JSON.stringify(context)}
         Here is the instruction: ${JSON.stringify(input)}
       `,
-    })
-    return response.text
+      })
+
+      return [response.object]
+    }
+  } else {
+    const { maxSteps = 10, ...textAgentProps } = props as TextAgentProps
+
+    return async ({ input }, context) => {
+      const response = await generateText({
+        ...textAgentProps,
+        maxSteps,
+        prompt: `
+        ${JSON.stringify(context)}
+        Here is the instruction: ${JSON.stringify(input)}
+      `,
+      })
+
+      return [response.text]
+    }
   }
 }
 
@@ -115,7 +138,7 @@ export function agent({ maxSteps = 10, ...rest }: Parameters<typeof generateText
  * is used as input for the next step.
  */
 const sequenceAgent: Agent<SequenceFlowDefinition> = async ({ input }, context) => {
-  let lastResult: string | undefined
+  let lastResult: JSONValue[] = []
   for (const step of input) {
     // tbd: when nesting, this will produce a lot of "Here is the context" text.
     // We need to resolve this in a better way, and trim the string.
@@ -134,7 +157,11 @@ const sequenceAgent: Agent<SequenceFlowDefinition> = async ({ input }, context) 
  * Use this agent to implement workflow where each step is executed in parallel.
  */
 const parallelAgent: Agent<ParallelFlowDefinition> = async ({ input }, context) => {
-  return Promise.all(input.map((step) => run(step, context)))
+  const responses = await Promise.all(input.map((step) => run(step, context)))
+
+  return responses.map((response, index) => ({
+    [input[index].name ?? `response-${index}`]: response,
+  }))
 }
 
 /**
@@ -149,7 +176,7 @@ const oneOfAgent: Agent<OneOfFlowDefinition> = async ({ input, conditions }, con
     `,
     prompt: `
       Here is the context: ${JSON.stringify(context)}
-      Here is the array of conditions: ${JSON.stringify(conditions)}
+      Here is the array of conditions: ${conditions.map((condition, index) => `\n${index} - ${condition}`)}
     `,
     schema: z.object({
       index: z
@@ -157,6 +184,7 @@ const oneOfAgent: Agent<OneOfFlowDefinition> = async ({ input, conditions }, con
         .describe('The index of the condition that is met, or -1 if no condition was met.'),
     }),
   })
+
   const index = condition.object.index
   if (index === -1) {
     throw new Error('No condition was satisfied')
