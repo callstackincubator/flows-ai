@@ -286,6 +286,10 @@ type ExecuteOptions = {
    * For complex flows, this will be called when all nested flows are executed.
    */
   onFlowFinish?: (flow: Flow, result: any) => void
+  /**
+   * Initial input for the flow
+   */
+  input?: string
 }
 
 export async function execute(definition: FlowDefinition, opts: ExecuteOptions) {
@@ -311,5 +315,5 @@ export async function execute(definition: FlowDefinition, opts: ExecuteOptions) 
       ])
     )
   }
-  return run(hydrate(definition, agents), '')
+  return run(hydrate(definition, agents), opts.input ?? '')
 }
