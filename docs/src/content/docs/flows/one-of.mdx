@@ -2,6 +2,11 @@
 title: 'One of'
 ---
 
+import { Code } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Use this flow to dynamically route to different execution paths based on conditions.
+
 ```mermaid
 flowchart LR
     A("IN") --> B["ROUTING AGENT"]
@@ -10,16 +15,21 @@ flowchart LR
     C -.-> F("OUT")
     D -.-> F
     E --> F
-
-    style C stroke-width:2px,stroke-dasharray: 2
-    style D stroke-width:2px,stroke-dasharray: 2
 ```
 
-Use this flow to dynamically route to different execution paths based on conditions.
+## API Reference
 
-<CodeGroup>
+### `input`
 
-```ts flow.ts
+**type:** `{ when: string; input: FlowDefinition }[]`
+
+Array of condition-flow pairs. The condition is evaluated to determine which flow to execute.
+
+## Example
+
+```ts collapse={27-52}
+import { oneOf } from 'flows-ai/flows'
+
 const oneOfTranslationFlow = oneOf([
   {
     when: 'The article is in German',
@@ -43,9 +53,9 @@ const oneOfTranslationFlow = oneOf([
     }
   }
 ])
-```
 
-```ts agents.ts
+import { agent, execute } from 'flows-ai'
+
 const germanAgent = agent({
   model: openai('gpt-4o'),
   system: 'You are a german translation agent...',
@@ -60,9 +70,7 @@ const spanishAgent = agent({
   model: openai('gpt-4o'),
   system: 'You are a spanish translation agent...',
 })
-```
 
-```ts main.ts
 execute(oneOfTranslationFlow, {
   agents: {
     germanAgent,
@@ -72,5 +80,3 @@ execute(oneOfTranslationFlow, {
   input: 'The article content to translate...'
 })
 ```
-
-</CodeGroup>

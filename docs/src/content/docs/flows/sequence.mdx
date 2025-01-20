@@ -1,6 +1,11 @@
 ---
-title: Sequence
+title: 'Sequence'
 ---
+
+import { Code } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Use this flow to chain multiple steps where output of one step becomes input for the next.
 
 ```mermaid
 flowchart LR
@@ -10,11 +15,19 @@ flowchart LR
     D --> E(OUT)
 ```
 
-Use this flow to chain multiple steps where output of one step becomes input for the next.
+## API Reference
 
-<CodeGroup>
+### `input`
 
-```ts flow.ts
+**type:** `FlowDefinition[]`
+
+Array of flows to execute in sequence.
+
+## Example
+
+```ts collapse={18-52}
+import { sequence } from 'flows-ai/flows'
+
 const translateFlow = sequence([
   {
     agent: 'translationAgent',
@@ -29,9 +42,9 @@ const translateFlow = sequence([
     input: 'Now summarize the translated text',
   }
 ])
-```
 
-```ts agents.ts
+import { agent, execute } from 'flows-ai'
+
 const translationAgent = agent({
   model: openai('gpt-4o'),
   system: 'You are a translation agent...',
@@ -46,9 +59,7 @@ const summaryAgent = agent({
   model: openai('gpt-4o'),
   system: 'You are a summary agent...',
 })
-```
 
-```ts main.ts
 execute(translateFlow, {
   agents: {
     translationAgent,
@@ -57,6 +68,3 @@ execute(translateFlow, {
   }
 })
 ```
-
-</CodeGroup>
-

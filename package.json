@@ -19,12 +19,9 @@
   },
   "workspaces": [
     "packages/*",
-    "example"
+    "example",
+    "docs"
   ],
-  "scripts": {
-    "prepare": "bun run build",
-    "build": "bun run --filter '*' build"
-  },
   "release-it": {
     "git": {
       "commitMessage": "chore: release ${version}",

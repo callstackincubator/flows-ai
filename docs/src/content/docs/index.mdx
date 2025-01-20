@@ -1,0 +1,93 @@
+---
+title: Introduction
+---
+
+A lightweight, type-safe AI workflow orchestrator inspired by Anthropic's agent patterns. Built on top of Vercel AI SDK.
+
+## Installation
+
+```bash
+npm install flows-ai
+```
+## Building your first flow
+
+The core architecture is built around the concept of a **Flow** - a simple, composable structure that can be infinitely nested.
+
+Each flow has:
+- `agent` - what to execute
+- `input` - what to process
+- `name` - optional name of the flow
+
+The `input` can be a string with instructions (if the agent is a simple LLM call). If you're using control flow agents provided by our library, you will notice input can also be another flow or an array of flows.
+
+### Agents
+
+Agent is a simple function that gets called during flow execution:
+
+```ts
+const translationAgent = async ({ input, context }) => {
+  // call an LLM, perform function call, etc.
+}
+```
+
+You can do anything in your agent. You can call an LLM or execute code.
+
+For example, to define an agent using Vercel AI SDK, you could do something like this:
+
+```ts
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
+
+const translationAgent = async ({ input, context }) => {
+  const response = await generateText({
+    model: openai('gpt-4o'),
+    system: 'You are a translation agent...',
+    prompt: input,
+  })
+  return response.text
+}
+```
+
+Since most of the time you will be using LLMs, we provide an `agent` helper function that takes same props as Vercel AI SDK's `generateText`. 
+
+```ts
+const translationAgent = agent({
+  model: openai('gpt-4o'),
+  system: 'You are a translation agent...',
+})
+```
+
+### Flow
+
+Next, you can define your flow. You can use any of the built-in flows or define your own. In the following example, we will run two agents in sequence.
+
+```ts
+const translateFlow = sequence([
+  {
+    agent: 'translationAgent',
+    input: 'Translate this text to English',
+  },
+  {
+    agent: 'summaryAgent',
+    input: 'Now summarize the translated text',
+  }
+])
+```
+
+When running in a sequence, the output of the first agent becomes the input for the next.
+
+### Execution
+
+To execute your flow, you can use the `execute` function. It takes your flow and a context object with agents.
+
+```ts
+execute(translateFlow, {
+  agents: {
+    translationAgent,
+    summaryAgent
+  },
+	input: 'Text to translate'
+})
+```
+
+In this example, we will first translate the text to English and then summarize it.
