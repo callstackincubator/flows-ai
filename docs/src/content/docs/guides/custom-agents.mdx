@@ -1,0 +1,37 @@
+---
+title: Custom Agents
+---
+
+Agent is a simple function that gets called with agent's input and context. This abstraction allows you to do pretty much anything, such as prompting an LLM of your choice with SDK of your choice or executing local functions.
+
+In this example, we will define an agent that repeats given flow 3 times and then returns all the results.
+
+In practice, the flow will look like this.
+
+```ts
+const flow = {
+	agent: 'repeatAgent',
+	input: {
+		agent: 'translationAgent',
+		input: 'Text to translate'
+	},
+  repeat: 3
+}
+```
+
+### Implementing the agent
+
+Since agent is a simple function, we can define it as a regular function.
+
+
+```ts
+const repeatAgent = ({ input, repeat }, context) => {
+  return Promise.all(new Array(repeat).fill(input.agent(input)))
+}
+```
+
+This will simply return an array of results from the nested flow.
+
+:::tip
+During flow execution, all `agent` instances are replaced with the actual agent function. Thanks to that, you can simply call it and await its result to get the output of nested flow.
+:::

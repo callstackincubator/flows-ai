@@ -2,6 +2,8 @@
 import starlight from '@astrojs/starlight'
 import { defineConfig } from 'astro/config'
 
+import { mermaid } from './src/plugins/mermaid'
+
 export default defineConfig({
   integrations: [
     starlight({
@@ -12,13 +14,20 @@ export default defineConfig({
       sidebar: [
         {
           label: 'Getting Started',
-          items: [{ label: 'Introduction', slug: '' }],
+          slug: '',
         },
         {
           label: 'Flows',
           autogenerate: { directory: 'flows' },
         },
+        {
+          label: 'Guides',
+          autogenerate: { directory: 'guides' },
+        },
       ],
     }),
   ],
+  markdown: {
+    remarkPlugins: [mermaid],
+  },
 })

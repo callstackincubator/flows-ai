@@ -5,6 +5,8 @@ title: 'Best of all'
 import { Code } from '@astrojs/starlight/components';
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
+Use this flow to generate multiple alternatives and pick the best one.
+
 ```mermaid
 flowchart LR
     IN("IN") --> A["Agent 1"]
@@ -16,38 +18,49 @@ flowchart LR
     EVAL --> OUT
 ```
 
-Use this flow to generate multiple alternatives and pick the best one.
+## API Reference
 
-<Tabs>
-  <TabItem label="flow.ts">
-    ```ts
-    import * as agents from './agents.ts'
+### `criteria`
 
-    export const bestOfFlow = bestOfAll({
-      criteria: 'Pick the response that is most helpful and concise',
-      input: [
-        {
-          agent: 'responseAgent',
-          input: 'Generate response version 1'
-        },
-        {
-          agent: 'responseAgent',
-          input: 'Generate response version 2'
-        }
-      ],
-    })
+**type:** `string`
 
-    execute(bestOfFlow, {
-      agents
-    })
-    ```
-  </TabItem>
-  <TabItem label="agents.ts">
-    ```ts
-    export const responseAgent = agent({
-      model: openai('gpt-4o'),
-      system: 'You are consumer relations specialist...',
-    })
-    ```
-  </TabItem>
-</Tabs>
+Criteria to evaluate the responses and pick the best one.
+
+### `input`
+
+**type:** `FlowDefinition[]`
+
+Array of flows to evaluate.
+
+## Example
+
+```ts collapse={17-40}
+import { bestOfAll } from 'flows-ai/flows'
+
+const bestOfFlow = bestOfAll({
+  criteria: 'Pick the response that is most helpful and concise',
+  input: [
+    {
+      agent: 'responseAgent',
+      input: 'Generate response version 1'
+    },
+    {
+      agent: 'responseAgent',
+      input: 'Generate response version 2'
+    }
+  ],
+})
+
+import { agent, execute } from 'flows-ai'
+
+const responseAgent = agent({
+  model: openai('gpt-4o'),
+  system: 'You are consumer relations specialist...',
+})
+
+execute(bestOfFlow, {
+  agents: {
+    responseAgent
+  }
+})
+```

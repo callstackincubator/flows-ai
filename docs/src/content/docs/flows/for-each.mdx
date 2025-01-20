@@ -5,8 +5,9 @@ title: 'For each'
 import { Code } from '@astrojs/starlight/components';
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
+Use this flow to process a collection of items.
+
 ```mermaid
-%%{init: {'themeVariables': { 'clusterBkg': 'transparent' }}}%%
 flowchart LR
     IN("IN") --> forEach
     subgraph forEach [For Each]
@@ -19,43 +20,55 @@ flowchart LR
     forEach --> OUT("OUT")
 ```
 
-Use this flow to process a collection of items.
+## API Reference
 
-<Tabs>
-  <TabItem label="flow.ts">
-    ```ts
-    import * as agents from './agents.ts'
+### `item`
 
-    export const processGithubIssuesFlow = sequence([
-      {
-        agent: 'githubAgent',
-        input: 'Go to Github and get the top 3 most popular issues and number of open issues.',
-      },
-      forEach({
-        item: 'Github issue and total number of open issues',
-        input: {
-          agent: 'responseAgent',
-          input: 'Send an email to the project maintainer.',
-        },
-      })
-    ])
+**type:** `string`
 
-    execute(processGithubIssuesFlow, {
-      agents
-    })
-    ```
-  </TabItem>
-  <TabItem label="agents.ts">
-    ```ts
-    export const githubAgent = agent({
-      model: openai('gpt-4o'),
-      system: 'You are a github crawler...',
-    })
+Description of each item in the collection to process.
 
-    export const responseAgent = agent({
-      model: openai('gpt-4o'),
-      system: 'You are responsible for summarizing issues on github...',
-    })
-    ```
-  </TabItem>
-</Tabs>
+### `input`
+
+**type:** `FlowDefinition`
+
+Flow definition to execute for each item.
+
+## Example
+
+```ts collapse={17-40}
+import { forEach, sequence } from 'flows-ai/flows'
+
+const processGithubIssuesFlow = sequence([
+  {
+    agent: 'githubAgent',
+    input: 'Go to Github and get the top 3 most popular issues and number of open issues.',
+  },
+  forEach({
+    item: 'Github issue and total number of open issues',
+    input: {
+      agent: 'responseAgent',
+      input: 'Send an email to the project maintainer.',
+    },
+  })
+])
+
+import { agent, execute } from 'flows-ai'
+
+const githubAgent = agent({
+  model: openai('gpt-4o'),
+  system: 'You are a github crawler...',
+})
+
+const responseAgent = agent({
+  model: openai('gpt-4o'),
+  system: 'You are responsible for summarizing issues on github...',
+})
+
+execute(processGithubIssuesFlow, {
+  agents: {
+    githubAgent,
+    responseAgent
+  }
+})
+```

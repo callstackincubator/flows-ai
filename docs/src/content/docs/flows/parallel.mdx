@@ -5,63 +5,68 @@ title: 'Parallel'
 import { Code } from '@astrojs/starlight/components';
 import { Tabs, TabItem } from '@astrojs/starlight/components';
 
-```mermaid
-flowchart LR
-    A("IN") --> B["ROUTING AGENT"]
-    B -.-> C["AGENT 1"] & D["AGENT 2"]
-    B --> E["AGENT 3"]
-    C -.-> F("OUT")
-    D -.-> F
-    E --> F
-
-    style C stroke-width:2px,stroke-dasharray: 2
-    style D stroke-width:2px,stroke-dasharray: 2
-```
-
 Use this flow to run multiple steps concurrently and aggregate results.
 
-<Tabs>
-  <TabItem label="flow.ts">
-    ```ts
-    import * as agents from './agents.ts'
+```mermaid
+flowchart LR
+    A(IN) --> B[AGENT 1]
+    A --> C[AGENT 2]
+    A --> D[AGENT 3]
+    B --> E(OUT)
+    C --> E(OUT)
+    D --> E(OUT)
+```
 
-    export const parallelTranslationFlow = parallel([
-      {
-        agent: 'germanAgent',
-        input: 'Translate the article to German'
-      },
-      {
-        agent: 'polishAgent',
-        input: 'Translate the article to Polish'
-      },
-      {
-        agent: 'spanishAgent',
-        input: 'Translate the article to Spanish'
-      }
-    ])
+## API Reference
 
-    execute(parallelTranslationFlow, {
-      agents,
-      input: 'The article content to translate...'
-    })
-    ```
-  </TabItem>
-  <TabItem label="agents.ts">
-    ```ts
-    export const germanAgent = agent({
-      model: openai('gpt-4o'),
-      system: 'You are a german translation agent...',
-    })
+### `input`
 
-    export const polishAgent = agent({
-      model: openai('gpt-4o'),
-      system: 'You are a polish translation agent...',
-    })
+**type:** `FlowDefinition[]`
 
-    export const spanishAgent = agent({
-      model: openai('gpt-4o'),
-      system: 'You are a spanish translation agent...',
-    })
-    ```
-  </TabItem>
-</Tabs>
+Array of flows to execute in parallel.
+
+## Example
+
+```ts collapse={18-52}
+import { parallel } from 'flows-ai/flows'
+
+const parallelTranslationFlow = parallel([
+  {
+    agent: 'germanAgent',
+    input: 'Translate the article to German'
+  },
+  {
+    agent: 'polishAgent',
+    input: 'Translate the article to Polish'
+  },
+  {
+    agent: 'spanishAgent',
+    input: 'Translate the article to Spanish'
+  }
+])
+
+import { agent, execute } from 'flows-ai'
+
+const germanAgent = agent({
+  model: openai('gpt-4o'),
+  system: 'You are a german translation agent...',
+})
+
+const polishAgent = agent({
+  model: openai('gpt-4o'),
+  system: 'You are a polish translation agent...',
+})
+
+const spanishAgent = agent({
+  model: openai('gpt-4o'),
+  system: 'You are a spanish translation agent...',
+})
+
+execute(parallelTranslationFlow, {
+  agents: {
+    germanAgent,
+    polishAgent,
+    spanishAgent
+  }
+})
+```

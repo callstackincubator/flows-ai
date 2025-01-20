@@ -9,14 +9,7 @@ A lightweight, type-safe AI workflow orchestrator inspired by Anthropic's agent 
 ```bash
 npm install flows-ai
 ```
-
-## Motivation
-
-This is not yet another AI agent framework. We're building on top of Vercel AI SDK. If you use it already, you will feel right at home.
-
-This library is aworkflow orchestrator. It provides simple, composable and extensible primitives to compose agents together in order to complete complex tasks.
-
-## Design
+## Building your first flow
 
 The core architecture is built around the concept of a **Flow** - a simple, composable structure that can be infinitely nested.
 
@@ -27,33 +20,46 @@ Each flow has:
 
 The `input` can be a string with instructions (if the agent is a simple LLM call). If you're using control flow agents provided by our library, you will notice input can also be another flow or an array of flows.
 
-This flexibility allows for infinite composition. 
-
-When a flow is executed, each agent receives its complete configuration as a payload and can decide how to handle it.
-
-## Building your first flow
-
 ### Agents
 
-To define your agents, we provide an `agent` helper function that takes same props as Vercel AI SDK's `generateText`. 
+Agent is a simple function that gets called during flow execution:
 
-The only difference with Vercel AI SDK's is that we take care of the `prompt`, that is provided during runtime, depending on where and how your agent is run.
+```ts
+const translationAgent = async ({ input, context }) => {
+  // call an LLM, perform function call, etc.
+}
+```
+
+You can do anything in your agent. You can call an LLM or execute code.
+
+For example, to define an agent using Vercel AI SDK, you could do something like this:
+
+```ts
+import { generateText } from 'ai'
+import { openai } from '@ai-sdk/openai'
+
+const translationAgent = async ({ input, context }) => {
+  const response = await generateText({
+    model: openai('gpt-4o'),
+    system: 'You are a translation agent...',
+    prompt: input,
+  })
+  return response.text
+}
+```
+
+Since most of the time you will be using LLMs, we provide an `agent` helper function that takes same props as Vercel AI SDK's `generateText`. 
 
 ```ts
 const translationAgent = agent({
   model: openai('gpt-4o'),
   system: 'You are a translation agent...',
 })
-
-const summaryAgent = agent({
-  model: openai('gpt-4o'),
-  system: 'You are a summary agent...',
-})
 ```
 
 ### Flow
 
-Next, you can define your flow. You can use any of the [built-in flows](/flows/) or define your own. In the following example, we will run two agents in sequence.
+Next, you can define your flow. You can use any of the built-in flows or define your own. In the following example, we will run two agents in sequence.
 
 ```ts
 const translateFlow = sequence([
@@ -79,31 +85,9 @@ execute(translateFlow, {
   agents: {
     translationAgent,
     summaryAgent
-  }
+  },
+	input: 'Text to translate'
 })
 ```
 
 In this example, we will first translate the text to English and then summarize it.
-
-## Advanced patterns
-
-### Custom Agents
-
-Agent is a simple function that gets called with agent's input and context.
-
-```ts
-type Props = {
-  // this agent accepts a single flow as input
-  input: Flow
-  // and additional configuration parameter
-  repeat?: number
-}
-
-const repeatAgent = ({ input, repeat = 3}, context) => {
-  // call an LLM, perform function call, etc.
-}
-```
-
-This abstraction allows you to define not just agents that call tools, but also agents that control the execution flow. This is what we use under the hood to provide built-in [flows](/flows/).
-
-When using `agent` helper, you're building on top of this abstraction.

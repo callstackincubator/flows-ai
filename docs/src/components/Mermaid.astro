@@ -1,0 +1,23 @@
+<script>
+  const graphs = document.getElementsByClassName("mermaid")
+  if (graphs.length > 0) {
+    import("mermaid").then(({ default: mermaid }) => {
+      mermaid.initialize({
+        startOnLoad: false,
+        fontFamily: "var(--sans-font)",
+        theme: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "default",
+      })
+
+      for (const graph of graphs) {
+        const content = graph.getAttribute("data-content")
+        if (!content) continue
+        let svg = document.createElement("svg")
+        const id = (svg.id = "mermaid-" + Math.round(Math.random() * 100000))
+        graph.appendChild(svg)
+        mermaid.render(id, content).then(result => {
+          graph.innerHTML = result.svg
+        })
+      }
+    })
+  }
+</script> 
