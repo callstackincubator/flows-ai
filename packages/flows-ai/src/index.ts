@@ -57,7 +57,7 @@ export type FlowDefinition = {
  */
 export type Flow = Hydrated<FlowDefinition>
 
-type Agent<P = FlowDefinition> = (prompt: Hydrated<P>, context: string) => Promise<any>
+export type Agent<P = FlowDefinition> = (prompt: Hydrated<P>, context: string) => Promise<any>
 
 /**
  * Use this function to hydrate a flow definition.
