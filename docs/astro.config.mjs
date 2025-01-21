@@ -13,8 +13,14 @@ export default defineConfig({
       },
       sidebar: [
         {
-          label: 'Getting Started',
-          slug: '',
+          label: 'Introduction',
+          items: [
+            {
+              label: 'Getting Started',
+              slug: '',
+            },
+            'introduction/options',
+          ],
         },
         {
           label: 'Flows',

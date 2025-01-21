@@ -1,0 +1,68 @@
+---
+title: Options
+---
+
+### Listening to flow events
+
+You can listen to flow events by passing `onFlowStart` and `onFlowFinish` options to `execute` function.
+
+```ts
+const onFlowStart = (flow, context) => {
+  console.log('Flow started', flow)
+}
+
+const onFlowFinish = (flow, result) => {
+  console.log('Flow finished', flow, result)
+}
+
+execute(flow, {
+  onFlowStart,
+  onFlowFinish
+})
+```
+
+:::tip[Assign unique name to each flow for better debugging]
+To help you debug your flow events, consider assigning each flow unique name.
+```ts ins={2,10}
+const flow = {
+  name: 'myFlow',
+  agent: 'myAgent',
+  input: 'myInput'
+}
+
+execute(flow, {
+  onFlowStart: (flow) => {
+		// flow.name is now available and will be `myFlow`
+    console.log('Flow started', flow.name)
+  },
+})
+```
+:::
+
+
+### Changing default model
+
+You can configure the model for all built-in agents by passing `model` option to `execute` function. By default, all built-in agents use `gpt-4o` model.
+
+```ts ins={7}
+import { openai } from '@ai-sdk/openai'
+
+const result = await execute(flow, {
+  agents: {
+    sequenceAgent: myCustomAgent,
+  },
+  model: openai('gpt-4o')
+})
+```
+
+### Overriding built-in agents
+
+If, for some reason, you want to override the built-in agents, you can do so by simply including them in the `agents` object.
+
+```ts ins={3}
+const result = await execute(flow, {
+  agents: {
+    sequenceAgent: myCustomAgent,
+  },
+})
+```

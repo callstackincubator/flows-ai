@@ -26,7 +26,7 @@ Since agent is a simple function, we can define it as a regular function.
 
 ```ts
 const repeatAgent = ({ input, repeat }, context) => {
-  return Promise.all(new Array(repeat).fill(input.agent(input)))
+  return Promise.all(new Array(repeat).fill(input.agent(input, context)))
 }
 ```
 
