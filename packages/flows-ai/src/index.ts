@@ -274,7 +274,7 @@ type ExecuteOptions = {
   /**
    * Called before each agent is executed.
    */
-  onFlowStart?: Agent<FlowDefinition>
+  onFlowStart?: (flow: Flow, context: Context) => void
   /**
    * Called after each agent is executed.
    * For complex flows, this will be called when all nested flows are executed.
