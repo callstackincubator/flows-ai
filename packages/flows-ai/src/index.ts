@@ -317,7 +317,7 @@ export async function execute(definition: FlowDefinition, opts: ExecuteOptions) 
    * When provided, we annotate each agent with a function that will call the
    * onFlowStart callback before it gets executed.
    */
-  if (opts.onFlowStart) {
+  if (opts.onFlowStart || opts.onFlowFinish) {
     agents = Object.fromEntries(
       Object.entries(agents).map(([key, agent]) => [
         key,
