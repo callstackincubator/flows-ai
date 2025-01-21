@@ -4,22 +4,22 @@
   "type": "module",
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "types": {
         "import": "./dist/index.d.ts",
         "require": "./dist/index.d.cts"
       },
+      "bun": "./src/index.ts",
       "require": "./dist/index.cjs",
       "import": "./dist/index.js"
     },
     "./flows": {
-      "import": "./dist/flows.js",
-      "require": "./dist/flows.cjs",
       "types": {
         "import": "./dist/flows.d.ts",
         "require": "./dist/flows.d.cts"
       },
-      "bun": "./src/flows.ts"
+      "bun": "./src/flows.ts",
+      "import": "./dist/flows.js",
+      "require": "./dist/flows.cjs"
     }
   },
   "dependencies": {
@@ -29,7 +29,6 @@
     "zod": "^3.24.1"
   },
   "scripts": {
-    "prepare": "bun run build",
     "build": "tsup-node"
   },
   "author": "Mike Grabowski <grabbou@gmail.com>",
