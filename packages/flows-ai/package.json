@@ -25,6 +25,7 @@
   "dependencies": {
     "@ai-sdk/openai": "^1.0.19",
     "ai": "^4.0.36",
+    "dedent": "^1.5.3",
     "zod": "^3.24.1"
   },
   "scripts": {
