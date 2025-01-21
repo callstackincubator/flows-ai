@@ -29,6 +29,7 @@
     "zod": "^3.24.1"
   },
   "scripts": {
+    "prepare": "bun run build",
     "build": "tsup-node"
   },
   "author": "Mike Grabowski <grabbou@gmail.com>",
