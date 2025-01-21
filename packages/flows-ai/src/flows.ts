@@ -2,7 +2,7 @@
  * Helpers to create flow definitions for various flow types.
  */
 
-import { FlowDefinition } from './index.js'
+import { type FlowDefinition } from './index.js'
 
 export function sequence(input: FlowDefinition[]) {
   return { input, agent: 'sequenceAgent' }

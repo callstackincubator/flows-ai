@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test'
 
 import { forEach, parallel, sequence } from './flows.js'
-import { Agent, execute } from './index.js'
+import { type Agent, execute } from './index.js'
 
 const agent = mock<Agent>(async ({ input }) => input)
 

@@ -1,7 +1,7 @@
 import '@xyflow/react/dist/style.css'
 
 import { Background, ReactFlow } from '@xyflow/react'
-import { FlowDefinition } from 'flows-ai'
+import { type FlowDefinition } from 'flows-ai'
 
 // tbd: let's keep it during testing phase
 // going forward, we will have to do something such as drag&drop or loader

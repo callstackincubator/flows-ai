@@ -1,15 +1,15 @@
 import { openai } from '@ai-sdk/openai'
-import { generateObject, generateText, LanguageModel } from 'ai'
+import { generateObject, generateText, type LanguageModel } from 'ai'
 import s from 'dedent'
 import { z } from 'zod'
 
 import {
-  BestOfFlowDefinition,
-  EvaluatorFlowDefinition,
-  ForEachFlowDefinition,
-  OneOfFlowDefinition,
-  ParallelFlowDefinition,
-  SequenceFlowDefinition,
+  type BestOfFlowDefinition,
+  type EvaluatorFlowDefinition,
+  type ForEachFlowDefinition,
+  type OneOfFlowDefinition,
+  type ParallelFlowDefinition,
+  type SequenceFlowDefinition,
 } from './flows.js'
 
 /**
