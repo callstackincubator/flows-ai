@@ -2,14 +2,14 @@
  * Helpers to create flow definitions for various flow types.
  */
 
-import { FlowDefinition } from './index.js'
+import { type FlowDefinition } from './index.js'
 
-export function sequence(input: FlowDefinition[]) {
-  return { input, agent: 'sequenceAgent' }
+export function sequence(input: FlowDefinition[], name?: string) {
+  return { input, agent: 'sequenceAgent', name }
 }
 
-export function parallel(input: FlowDefinition[]) {
-  return { input, agent: 'parallelAgent' }
+export function parallel(input: FlowDefinition[], name?: string) {
+  return { input, agent: 'parallelAgent', name }
 }
 
 type RouterProps = {
@@ -17,11 +17,12 @@ type RouterProps = {
   input: FlowDefinition
 }[]
 
-export function oneOf(input: RouterProps) {
+export function oneOf(input: RouterProps, name?: string) {
   return {
     input: input.map((value) => value.input),
     conditions: input.map((value) => value.when),
     agent: 'oneOfAgent',
+    name,
   }
 }
 
@@ -31,8 +32,8 @@ type EvaluatorProps = {
   max_iterations?: number
 }
 
-export function evaluator(props: EvaluatorProps) {
-  return { ...props, agent: 'optimizeAgent' }
+export function evaluator(props: EvaluatorProps, name?: string) {
+  return { ...props, agent: 'optimizeAgent', name }
 }
 
 type ForEachProps = {
@@ -40,8 +41,8 @@ type ForEachProps = {
   item: string
 }
 
-export function forEach(props: ForEachProps) {
-  return { ...props, agent: 'forEachAgent' }
+export function forEach(props: ForEachProps, name?: string) {
+  return { ...props, agent: 'forEachAgent', name }
 }
 
 type BestOfFlowProps = {
@@ -49,8 +50,8 @@ type BestOfFlowProps = {
   input: FlowDefinition[]
 }
 
-export function bestOfAll(props: BestOfFlowProps) {
-  return { ...props, agent: 'bestOfAllAgent' }
+export function bestOfAll(props: BestOfFlowProps, name?: string) {
+  return { ...props, agent: 'bestOfAllAgent', name }
 }
 
 /**

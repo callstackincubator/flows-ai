@@ -56,7 +56,7 @@ execute(translateFlow, {
 
 In this example, we will first translate the text to English and then summarize it.
 
-Learn more about this and other flows in our [docs](./docs/introduction.mdx).
+Learn more about this and other flows in our [docs](./docs/src/content/docs/index.mdx).
 
 ## License
 

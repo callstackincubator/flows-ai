@@ -2,8 +2,12 @@
 title: 'For each'
 ---
 
+import { Code } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
+
+Use this flow to process a collection of items.
+
 ```mermaid
-%%{init: {'themeVariables': { 'clusterBkg': 'transparent' }}}%%
 flowchart LR
     IN("IN") --> forEach
     subgraph forEach [For Each]
@@ -16,11 +20,25 @@ flowchart LR
     forEach --> OUT("OUT")
 ```
 
-Use this flow to process a collection of items.
+## API Reference
 
-<CodeGroup>
+### `item`
 
-```ts flow.ts
+**type:** `string`
+
+Description of each item in the collection to process.
+
+### `input`
+
+**type:** `FlowDefinition`
+
+Flow definition to execute for each item.
+
+## Example
+
+```ts collapse={17-40}
+import { forEach, sequence } from 'flows-ai/flows'
+
 const processGithubIssuesFlow = sequence([
   {
     agent: 'githubAgent',
@@ -34,9 +52,9 @@ const processGithubIssuesFlow = sequence([
     },
   })
 ])
-```
 
-```ts agents.ts
+import { agent, execute } from 'flows-ai'
+
 const githubAgent = agent({
   model: openai('gpt-4o'),
   system: 'You are a github crawler...',
@@ -46,15 +64,11 @@ const responseAgent = agent({
   model: openai('gpt-4o'),
   system: 'You are responsible for summarizing issues on github...',
 })
-```
 
-```ts main.ts
-execute(processGithubIssues, {
+execute(processGithubIssuesFlow, {
   agents: {
     githubAgent,
     responseAgent
   }
 })
 ```
-
-</CodeGroup>

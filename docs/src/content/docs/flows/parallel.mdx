@@ -2,24 +2,34 @@
 title: 'Parallel'
 ---
 
-```mermaid
-flowchart LR
-    A("IN") --> B["ROUTING AGENT"]
-    B -.-> C["AGENT 1"] & D["AGENT 2"]
-    B --> E["AGENT 3"]
-    C -.-> F("OUT")
-    D -.-> F
-    E --> F
-
-    style C stroke-width:2px,stroke-dasharray: 2
-    style D stroke-width:2px,stroke-dasharray: 2
-```
+import { Code } from '@astrojs/starlight/components';
+import { Tabs, TabItem } from '@astrojs/starlight/components';
 
 Use this flow to run multiple steps concurrently and aggregate results.
 
-<CodeGroup>
+```mermaid
+flowchart LR
+    A(IN) --> B[AGENT 1]
+    A --> C[AGENT 2]
+    A --> D[AGENT 3]
+    B --> E(OUT)
+    C --> E(OUT)
+    D --> E(OUT)
+```
 
-```ts flow.ts
+## API Reference
+
+### `input`
+
+**type:** `FlowDefinition[]`
+
+Array of flows to execute in parallel.
+
+## Example
+
+```ts collapse={18-52}
+import { parallel } from 'flows-ai/flows'
+
 const parallelTranslationFlow = parallel([
   {
     agent: 'germanAgent',
@@ -34,9 +44,9 @@ const parallelTranslationFlow = parallel([
     input: 'Translate the article to Spanish'
   }
 ])
-```
 
-```ts agents.ts
+import { agent, execute } from 'flows-ai'
+
 const germanAgent = agent({
   model: openai('gpt-4o'),
   system: 'You are a german translation agent...',
@@ -51,17 +61,12 @@ const spanishAgent = agent({
   model: openai('gpt-4o'),
   system: 'You are a spanish translation agent...',
 })
-```
 
-```ts main.ts
 execute(parallelTranslationFlow, {
   agents: {
     germanAgent,
     polishAgent,
     spanishAgent
-  },
-  input: 'The article content to translate...'
+  }
 })
 ```
-
-</CodeGroup>
