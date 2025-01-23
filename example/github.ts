@@ -76,8 +76,9 @@ const response = await execute(githubProjectHealthAnalysisFlow, {
     communicationAgent,
   },
   onFlowStart: (flow) => {
-    if (flow.name) {
-      console.log('Executing', flow.name)
+    console.log('Flow started', flow.agent.name)
+    if (flow.agent.name) {
+      console.log('Executing', flow.agent.name)
     }
   },
 })
