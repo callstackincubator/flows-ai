@@ -5,11 +5,11 @@
 import { type FlowDefinition } from './index.js'
 
 export function sequence(input: FlowDefinition[], name?: string) {
-  return { input, agent: 'sequenceAgent', name: name ?? 'sequence' }
+  return { input, agent: 'sequenceAgent', name }
 }
 
 export function parallel(input: FlowDefinition[], name?: string) {
-  return { input, agent: 'parallelAgent', name: name ?? 'parallel' }
+  return { input, agent: 'parallelAgent', name }
 }
 
 type RouterProps = {
@@ -22,7 +22,7 @@ export function oneOf(input: RouterProps, name?: string) {
     input: input.map((value) => value.input),
     conditions: input.map((value) => value.when),
     agent: 'oneOfAgent',
-    name: name ?? 'oneOf',
+    name,
   }
 }
 
@@ -33,7 +33,7 @@ type EvaluatorProps = {
 }
 
 export function evaluator(props: EvaluatorProps, name?: string) {
-  return { ...props, agent: 'optimizeAgent', name: name ?? 'evaluator' }
+  return { ...props, agent: 'optimizeAgent', name }
 }
 
 type ForEachProps = {
@@ -42,7 +42,7 @@ type ForEachProps = {
 }
 
 export function forEach(props: ForEachProps, name?: string) {
-  return { ...props, agent: 'forEachAgent', name: name ?? 'forEach' }
+  return { ...props, agent: 'forEachAgent', name }
 }
 
 type BestOfFlowProps = {
@@ -51,7 +51,7 @@ type BestOfFlowProps = {
 }
 
 export function bestOfAll(props: BestOfFlowProps, name?: string) {
-  return { ...props, agent: 'bestOfAllAgent', name: name ?? 'bestOfAll' }
+  return { ...props, agent: 'bestOfAllAgent', name }
 }
 
 /**

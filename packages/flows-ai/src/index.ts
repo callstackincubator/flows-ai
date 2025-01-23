@@ -18,7 +18,7 @@ import {
  */
 type Hydrated<T> = T extends object
   ? {
-      [K in keyof T]: K extends 'agent' ? Agent<T> : Hydrated<T[K]>
+      [K in keyof T]: K extends 'agent' ? Agent<T> & { name: string } : Hydrated<T[K]>
     }
   : T
 
@@ -81,6 +81,10 @@ function hydrate(definition: FlowDefinition, agents: Record<string, Agent>): Flo
   if (!agent) {
     throw new Error(`Agent ${definition.agent} not found`)
   }
+  /**
+   * We set the name of the agent to its name from the definition.
+   */
+  Object.defineProperty(agent, 'name', { value: definition.agent })
   if (typeof definition.input === 'string') {
     return {
       ...definition,
