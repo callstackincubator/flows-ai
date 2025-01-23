@@ -1,19 +1,17 @@
-import { Handle, Position } from '@xyflow/react'
-import { memo } from 'react'
+import { Handle, Node, NodeProps, Position } from '@xyflow/react'
+import { FlowDefinition } from 'flows-ai'
 
-export default memo(({ data, isConnectable }: any) => {
+/**
+ * Custom generic node for all types of agents.
+ * In the future, we will have to add more nodes for each type of agent.
+ */
+export default function AgentNode({ data }: NodeProps<Node<FlowDefinition>>) {
   return (
     <div>
-      <Handle
-        type="target"
-        position={Position.Top}
-        onConnect={(params) => console.log('handle onConnect', params)}
-        isConnectable={isConnectable}
-      />
+      <Handle type="target" position={Position.Top} />
       <strong>{data.agent}</strong>
       <div>{data.name}</div>
-      <Handle type="source" position={Position.Bottom} id="a" isConnectable={isConnectable} />
-      {/* <Handle type="source" position={Position.Bottom} id="b" isConnectable={isConnectable} /> */}
+      <Handle type="source" position={Position.Bottom} />
     </div>
   )
-})
+}

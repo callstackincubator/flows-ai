@@ -6,6 +6,9 @@ import { createRoot } from 'react-dom/client'
 
 import App from './App.tsx'
 
+/**
+ * Temporarily, the application takes full screen.
+ */
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <ReactFlowProvider>

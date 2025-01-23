@@ -19,10 +19,15 @@ import { useEffect, useMemo } from 'react'
 import { githubProjectHealthAnalysisFlow } from '../../../example/github.ts'
 import AgentNode from './AgentNode.tsx'
 
-const noteTypes = {
+const nodeTypes = {
   agent: AgentNode,
 }
 
+/**
+ * Calculate layout for nodes and edges.
+ *
+ * Taken from: https://reactflow.dev/learn/layouting/layouting#dagre
+ */
 const getLayoutedElements = (nodes: Node[], edges: Edge[], direction: string) => {
   const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}))
   g.setGraph({ rankdir: direction })
@@ -41,8 +46,11 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction: string) =>
   return {
     nodes: nodes.map((node) => {
       const position = g.node(node.id)
-      // We are shifting the dagre node position (anchor=center center) to the top left
-      // so it matches the React Flow node anchor point (top left).
+
+      /**
+       * We are shifting the dagre node position (anchor=center center) to the top left
+       * so it matches the React Flow node anchor point (top left).
+       */
       const x = position.x - (node.measured?.width ?? 0) / 2
       const y = position.y - (node.measured?.height ?? 0) / 2
 
@@ -54,6 +62,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[], direction: string) =>
 
 /**
  * Recursively generates nodes and edges for a flow visualization.
+ * Each node is of custom type, see `AgentNode.tsx` for details.
  */
 function generateNodesAndEdges(
   flow: FlowDefinition,
@@ -64,12 +73,8 @@ function generateNodesAndEdges(
   const parentId = parent?.id || nodes.at(-1)?.id
 
   const currentNode: Node = {
-    id: `${nodes.length}-${flow.agent}`,
-    data: {
-      label: `${flow.agent}${flow.name ? `\n${flow.name}` : ''}`,
-      agent: flow.agent,
-      name: flow.name,
-    },
+    id: crypto.randomUUID(),
+    data: flow,
     type: 'agent',
     position: {
       x: 0,
@@ -84,11 +89,9 @@ function generateNodesAndEdges(
       id: `${currentNode.id}-${parentId}`,
       source: parentId,
       target: currentNode.id,
-      animated: true,
     })
   }
 
-  // Last node, stop generating
   if (typeof flow.input === 'string') {
     return {
       nodes,
@@ -96,33 +99,18 @@ function generateNodesAndEdges(
     }
   }
 
-  // Handle arrays of workflows
-  if (Array.isArray(flow.input)) {
-    // Put nodes in sequence
-    if (currentNode.data['agent'] === 'sequenceAgent') {
-      for (const innerFlow of flow.input) {
-        generateNodesAndEdges(innerFlow, nodes, edges)
-      }
-    } else {
-      // Put nodes parallel
-      for (const innerFlow of flow.input) {
-        generateNodesAndEdges(innerFlow, nodes, edges, currentNode)
-      }
-    }
+  const subflows = Array.isArray(flow.input) ? flow.input : [flow.input]
 
-    return { nodes, edges }
+  for (const subflow of subflows) {
+    generateNodesAndEdges(
+      subflow,
+      nodes,
+      edges,
+      flow.agent === 'sequenceAgent' ? undefined : currentNode
+    )
   }
 
-  // Handle inner workflow
-  if (!Array.isArray(flow.input)) {
-    return generateNodesAndEdges(flow.input, nodes, edges, currentNode)
-  }
-
-  // Failsafe
-  return {
-    nodes,
-    edges,
-  }
+  return { nodes, edges }
 }
 
 function Flow() {
@@ -157,7 +145,7 @@ function Flow() {
       onNodesChange={onNodesChange}
       onEdgesChange={onEdgesChange}
       fitView
-      nodeTypes={noteTypes}
+      nodeTypes={nodeTypes}
     >
       <Background />
     </ReactFlow>
