@@ -14,12 +14,10 @@ import {
 
 /**
  * Helper type to hydrate the flow definition.
- * This is what is done when we call `hydrate`.
+ * For each `agent` present, we put `run` property that will run it with its input.
  */
 type Hydrated<T> = T extends object
-  ? {
-      [K in keyof T]: K extends 'agent' ? Agent<T> : Hydrated<T[K]>
-    }
+  ? { [K in keyof T]: Hydrated<T[K]> } & (T extends { agent: string } ? { run: Agent<T> } : {})
   : T
 
 /**
@@ -53,8 +51,7 @@ export type FlowDefinition = {
 /**
  * Flow is a hydrated version of FlowDefinition.
  *
- * The difference here is that `agent` is now a function, instead of a string.
- * In the future, we will perform validation here.
+ * The flow will have `run` property that will execute given agent with its input.
  */
 export type Flow = Hydrated<FlowDefinition>
 
@@ -77,27 +74,27 @@ type AgentFactory<T = FlowDefinition> = (opts: { model: LanguageModel }) => Agen
  * Use this function to hydrate a flow definition.
  */
 function hydrate(definition: FlowDefinition, agents: Record<string, Agent>): Flow {
-  const agent = agents[definition.agent]
-  if (!agent) {
+  const run = agents[definition.agent]
+  if (!run) {
     throw new Error(`Agent ${definition.agent} not found`)
   }
   if (typeof definition.input === 'string') {
     return {
       ...definition,
-      agent,
+      run,
       input: definition.input,
     }
   }
   if (Array.isArray(definition.input)) {
     return {
       ...definition,
-      agent,
+      run,
       input: definition.input.map((flow) => hydrate(flow, agents)),
     }
   }
   return {
     ...definition,
-    agent,
+    run,
     input: hydrate(definition.input, agents),
   }
 }
@@ -127,7 +124,7 @@ export function agent({ maxSteps = 10, ...rest }: Parameters<typeof generateText
 const sequenceAgent: Agent<SequenceFlowDefinition> = async ({ input }, context) => {
   let lastResult: string | undefined
   for (const step of input) {
-    lastResult = await step.agent(step, lastResult ? [...context, lastResult] : context)
+    lastResult = await step.run(step, lastResult ? [...context, lastResult] : context)
   }
   return lastResult
 }
@@ -136,7 +133,7 @@ const sequenceAgent: Agent<SequenceFlowDefinition> = async ({ input }, context) 
  * Use this agent to implement workflow where each step is executed in parallel.
  */
 const parallelAgent: Agent<ParallelFlowDefinition> = async ({ input }, context) => {
-  return Promise.all(input.map((step) => step.agent(step, context)))
+  return Promise.all(input.map((step) => step.run(step, context)))
 }
 
 /**
@@ -165,7 +162,7 @@ export const makeOneOfAgent: AgentFactory<OneOfFlowDefinition> =
     if (index === -1) {
       throw new Error('No condition was satisfied')
     }
-    return input[index].agent(input[index], context)
+    return input[index].run(input[index], context)
   }
 
 /**
@@ -177,7 +174,7 @@ export const makeOptimizeAgent: AgentFactory<EvaluatorFlowDefinition> =
   async ({ input, criteria, max_iterations = 3 }, context) => {
     let rejection_reason: string | undefined
     for (let i = 0; i < max_iterations; i++) {
-      const result = await input.agent(
+      const result = await input.run(
         input,
         rejection_reason
           ? [
@@ -222,7 +219,7 @@ export const makeOptimizeAgent: AgentFactory<EvaluatorFlowDefinition> =
 export const makeBestOfAllAgent: AgentFactory<BestOfFlowDefinition> =
   (opts) =>
   async ({ input, criteria }, context) => {
-    const results = await Promise.all(input.map((flow) => flow.agent(flow, context)))
+    const results = await Promise.all(input.map((flow) => flow.run(flow, context)))
     const best = await generateObject({
       ...opts,
       system: s`
@@ -262,7 +259,7 @@ export const makeForEachAgent: AgentFactory<ForEachFlowDefinition> =
       }),
     })
     return await Promise.all(
-      response.object.items.map((item) => input.agent(input, [...context.slice(0, -1), item]))
+      response.object.items.map((item) => input.run(input, [...context.slice(0, -1), item]))
     )
   }
 
@@ -339,5 +336,5 @@ export async function execute(definition: FlowDefinition, opts: ExecuteOptions) 
   /**
    * Execute the flow.
    */
-  return flow.agent(flow, opts.input ? [opts.input] : [])
+  return flow.run(flow, opts.input ? [opts.input] : [])
 }
