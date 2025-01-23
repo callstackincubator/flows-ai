@@ -16,7 +16,7 @@ import { useEffect, useMemo } from 'react'
 
 // tbd: let's keep it during testing phase
 // going forward, we will have to do something such as drag&drop or loader
-import { githubProjectHealthAnalysisFlow } from '../../../example/github.ts'
+import { githubProjectHealthAnalysisFlow } from '../../../example/flows.ts'
 import AgentNode from './AgentNode.tsx'
 
 const nodeTypes = {
