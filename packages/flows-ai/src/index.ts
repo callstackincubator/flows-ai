@@ -14,7 +14,7 @@ import {
 
 /**
  * Helper type to hydrate the flow definition.
- * For each `agent` present, we put `run` property that will run it with its input.
+ * This is what is done when we call `hydrate`.
  */
 type Hydrated<T> = T extends object
   ? {
@@ -53,7 +53,8 @@ export type FlowDefinition = {
 /**
  * Flow is a hydrated version of FlowDefinition.
  *
- * The flow will have `run` property that will execute given agent with its input.
+ * The difference here is that `agent` is now a function, instead of a string.
+ * In the future, we will perform validation here.
  */
 export type Flow = Hydrated<FlowDefinition>
 
