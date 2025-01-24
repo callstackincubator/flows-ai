@@ -1,17 +1,25 @@
 {
-  "name": "@flows-ai/builder",
-  "private": true,
+  "name": "@flows-ai/ui",
   "version": "0.2.1",
   "type": "module",
+  "exports": {
+    "bun": "./src/index.ts",
+      "types": {
+        "import": "./dist/index.d.ts",
+        "require": "./dist/index.d.cts"
+      },
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js"
+  },
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "prepare": "bun run build",
+    "build": "tsup-node"
   },
   "dependencies": {
     "@dagrejs/dagre": "^1.1.4",
-    "@xyflow/react": "^12.4.1",
+    "@xyflow/react": "^12.4.1"
+  },
+  "peerDependencies": {
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

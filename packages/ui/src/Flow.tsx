@@ -1,22 +1,21 @@
 import '@xyflow/react/dist/style.css'
+import './flow.css'
 
 import Dagre from '@dagrejs/dagre'
 import {
   Background,
-  Edge,
-  Node,
+  type Edge,
+  type Node,
   ReactFlow,
+  ReactFlowProvider,
   useEdgesState,
   useNodesInitialized,
   useNodesState,
   useReactFlow,
 } from '@xyflow/react'
-import { FlowDefinition } from 'flows-ai'
-import { useEffect, useMemo } from 'react'
+import { type FlowDefinition } from 'flows-ai'
+import { useEffect } from 'react'
 
-// tbd: let's keep it during testing phase
-// going forward, we will have to do something such as drag&drop or loader
-import { githubProjectHealthAnalysisFlow } from '../../../example/flows.ts'
 import AgentNode from './AgentNode.tsx'
 
 const nodeTypes = {
@@ -113,14 +112,11 @@ function generateNodesAndEdges(
   return { nodes, edges }
 }
 
-function Flow() {
+function Flow({ flow }: { flow: FlowDefinition }) {
   const { fitView, getNodes, getEdges } = useReactFlow()
   const nodesInitialized = useNodesInitialized()
 
-  const { nodes: initialNodes, edges: initialEdges } = useMemo(
-    () => generateNodesAndEdges(githubProjectHealthAnalysisFlow),
-    []
-  )
+  const { nodes: initialNodes, edges: initialEdges } = generateNodesAndEdges(flow)
 
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
@@ -152,4 +148,8 @@ function Flow() {
   )
 }
 
-export default Flow
+export default (props: React.ComponentProps<typeof Flow>) => (
+  <ReactFlowProvider>
+    <Flow {...props} />
+  </ReactFlowProvider>
+)

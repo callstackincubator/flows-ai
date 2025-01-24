@@ -1,11 +1,18 @@
 // @ts-check
+import react from '@astrojs/react'
 import starlight from '@astrojs/starlight'
 import { defineConfig } from 'astro/config'
 
 import { mermaid } from './src/plugins/mermaid'
 
 export default defineConfig({
+  vite: {
+    resolve: {
+      conditions: ['bun'],
+    },
+  },
   integrations: [
+    react(),
     starlight({
       title: 'Flows AI',
       social: {
@@ -29,6 +36,10 @@ export default defineConfig({
         {
           label: 'Guides',
           autogenerate: { directory: 'guides' },
+        },
+        {
+          label: 'Sandbox',
+          slug: 'sandbox',
         },
       ],
     }),
