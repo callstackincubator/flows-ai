@@ -85,18 +85,11 @@ function hydrate(definition: FlowDefinition, agents: Record<string, Agent>): Flo
    * We set the name of the agent to its name from the definition.
    */
   Object.defineProperty(agent, 'name', { value: definition.agent })
-  if (typeof definition.input === 'string') {
+  if (typeof definition.input === 'string' || typeof definition.input === 'function') {
     return {
       ...definition,
       agent,
       input: definition.input,
-    }
-  }
-  if (typeof definition.input === 'function') {
-    return {
-      ...definition,
-      agent,
-      input: definition.input(),
     }
   }
   if (Array.isArray(definition.input)) {
@@ -124,7 +117,7 @@ export function agent({ maxSteps = 10, ...rest }: Parameters<typeof generateText
       maxSteps,
       prompt: s`
         Here is the context: ${JSON.stringify(context)}
-        Here is the instruction: ${JSON.stringify(input)}
+        Here is the instruction: ${JSON.stringify(typeof input === 'function' ? input() : input)}
       `,
     })
     return response.text
