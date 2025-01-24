@@ -1,5 +1,11 @@
 import { openai } from '@ai-sdk/openai'
-import { generateObject, generateText, type LanguageModel } from 'ai'
+import {
+  type CoreTool,
+  generateObject,
+  generateText,
+  type GenerateTextResult,
+  type LanguageModel,
+} from 'ai'
 import s from 'dedent'
 import { z } from 'zod'
 
@@ -106,11 +112,15 @@ function hydrate(definition: FlowDefinition, agents: Record<string, Agent>): Flo
   }
 }
 
+type AgentProps = Parameters<typeof generateText>[0] & {
+  tapResponse?: (response: GenerateTextResult<Record<string, CoreTool<any, any>>, unknown>) => void
+}
+
 /**
  * Helper function to create a user-defined agent that can then be referneced in a flow.
  * Like `generateText` in Vercel AI SDK, but we're taking care of `prompt`.
  */
-export function agent({ maxSteps = 10, ...rest }: Parameters<typeof generateText>[0]): Agent {
+export function agent({ tapResponse, maxSteps = 10, ...rest }: AgentProps): Agent {
   return async ({ input }, context) => {
     const response = await generateText({
       ...rest,
@@ -120,6 +130,8 @@ export function agent({ maxSteps = 10, ...rest }: Parameters<typeof generateText
         Here is the instruction: ${JSON.stringify(input)}
       `,
     })
+    // Process the response outside of flow if needed, and keep the flow running
+    tapResponse?.(response)
     return response.text
   }
 }
