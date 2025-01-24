@@ -203,20 +203,20 @@ export const makeOptimizeAgent: AgentFactory<EvaluatorFlowDefinition> =
           Here is the result: ${JSON.stringify(result)}
           Here is the criteria: ${JSON.stringify(criteria)}
         `,
-        schema: z.discriminatedUnion('type', [
-          z.object({ type: z.literal('pass') }),
-          z.object({
-            type: z.literal('fail'),
-            reason: z.string().describe('The reason why the result is not good.'),
-          }),
-        ]),
+        schema: z.object({
+          pass: z.boolean(),
+          fail_reason: z.string().optional().describe('The reason why the result is not good.'),
+        }),
       })
-      if (evaluation.object.type === 'pass') {
+      if (evaluation.object.pass) {
         return result
       }
-      rejection_reason = evaluation.object.reason
+      rejection_reason = evaluation.object.fail_reason
+
+      if (i == max_iterations - 1) {
+        return result
+      }
     }
-    throw new Error('Max iterations reached')
   }
 
 /**
