@@ -43,7 +43,7 @@ export type FlowDefinition = {
    * For other agents, input must be an object (nested flow definition)
    * or an array of objects (nested flow definitions).
    */
-  input: FlowDefinition | FlowDefinition[] | string
+  input: FlowDefinition | FlowDefinition[] | string | (() => string)
   /**
    * Optional name of the flow.
    */
@@ -90,6 +90,13 @@ function hydrate(definition: FlowDefinition, agents: Record<string, Agent>): Flo
       ...definition,
       agent,
       input: definition.input,
+    }
+  }
+  if (typeof definition.input === 'function') {
+    return {
+      ...definition,
+      agent,
+      input: definition.input(),
     }
   }
   if (Array.isArray(definition.input)) {
