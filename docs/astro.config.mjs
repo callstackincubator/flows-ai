@@ -18,7 +18,7 @@ export default defineConfig({
         '@uiw/codemirror-extensions-basic-setup':
           '@uiw/codemirror-extensions-basic-setup/src/index.ts',
         '@uiw/codemirror-theme-abyss': '@uiw/codemirror-theme-abyss/src/index.ts',
-        '@uiw/codemirror-themes': '@uiw/codemirror-themes/src/index.ts',
+        '@uiw/codemirror-themes': '@uiw/codemirror-themes/src/index.tsx',
       },
       conditions: ['bun'],
     },
