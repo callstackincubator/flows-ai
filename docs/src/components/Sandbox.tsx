@@ -1,4 +1,5 @@
 import { Flow } from '@flows-ai/ui'
+import ReactCodeMirror from '@uiw/react-codemirror'
 import s from 'dedent'
 import { useEffect, useState } from 'react'
 
@@ -21,8 +22,8 @@ export function Sandbox() {
     try {
       const blob = new Blob([code], { type: 'text/javascript' })
       const url = URL.createObjectURL(blob)
-
-      const module = await import(url)
+      /* vite-ignore */
+      const module = await import(/* @vite-ignore */ url)
       setResult(module.default)
 
       URL.revokeObjectURL(url)
@@ -37,14 +38,9 @@ export function Sandbox() {
   }, [])
 
   return (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-2 gap-4 not-content">
       <div>
-        <textarea
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          onBlur={() => evaluateCode()}
-          className="w-full h-64 font-mono p-2"
-        />
+        <ReactCodeMirror value={code} height="200px" />
         <div>
           <pre className="whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
         </div>
