@@ -8,11 +8,11 @@ You can listen to flow events by passing `onFlowStart` and `onFlowFinish` option
 
 ```ts
 const onFlowStart = (flow, context) => {
-  console.log('Flow started', flow)
+  console.log('Flow started', flow.agent.name)
 }
 
 const onFlowFinish = (flow, result) => {
-  console.log('Flow finished', flow, result)
+  console.log('Flow finished', flow.agent.name, result)
 }
 
 execute(flow, {
@@ -22,17 +22,18 @@ execute(flow, {
 ```
 
 :::tip[Assign unique name to each flow for better debugging]
-To help you debug your flow events, consider assigning each flow unique name.
-```ts ins={2,10}
+If you have multiple agents with the same name in your flow, you can give each flow a unique name.
+```ts ins={2,11}
 const flow = {
-  name: 'myFlow',
+  name: 'getGithubProjects',
   agent: 'myAgent',
   input: 'myInput'
 }
 
 execute(flow, {
   onFlowStart: (flow) => {
-		// flow.name is now available and will be `myFlow`
+		// flow.name is now available and will unique
+    // you can still console log flow.agent.name tho
     console.log('Flow started', flow.name)
   },
 })

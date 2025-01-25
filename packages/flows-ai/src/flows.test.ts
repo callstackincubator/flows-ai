@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test'
+import { z } from 'zod'
 
 import { evaluator, forEach, parallel, sequence } from './flows.js'
 import { type Agent, execute } from './index.js'
@@ -139,6 +140,69 @@ describe('forEach', () => {
     expect(item.mock.calls[0][1]).toEqual(['callstackincubator/foo'])
     expect(item.mock.calls[1][1]).toEqual(['callstackincubator/bar'])
     expect(item.mock.calls[2][1]).toEqual(['callstackincubator/baz'])
+  })
+  it('should break the list into items that satisfy the given schema', async () => {
+    const flow = sequence([
+      {
+        input: `
+          Here are all the github projects I found:
+          - callstackincubator/foo, stars 1000
+          - callstackincubator/bar, stars 2000
+          - callstackincubator/baz, stars 3000
+        `,
+        agent: 'agent',
+      },
+      forEach({
+        item: z
+          .object({
+            organization: z.string().describe('The organization name'),
+            project: z.string().describe('The project name'),
+            stars: z.number().describe('The number of stars'),
+          })
+          .describe('Single github project'),
+        input: {
+          agent: 'item',
+          input: '',
+        },
+      }),
+    ])
+
+    const item = mock<Agent>(async ({ input }) => input)
+
+    await execute(flow, {
+      agents: {
+        agent,
+        item,
+      },
+    })
+
+    expect(item).toHaveBeenCalledTimes(3)
+
+    expect(item.mock.calls.map((call) => call[1])).toMatchInlineSnapshot(`
+[
+  [
+    {
+      "organization": "callstackincubator",
+      "project": "foo",
+      "stars": 1000,
+    },
+  ],
+  [
+    {
+      "organization": "callstackincubator",
+      "project": "bar",
+      "stars": 2000,
+    },
+  ],
+  [
+    {
+      "organization": "callstackincubator",
+      "project": "baz",
+      "stars": 3000,
+    },
+  ],
+]
+`)
   })
 })
 
