@@ -41,24 +41,19 @@ export function Sandbox() {
 
   return (
     <div className="grid grid-cols-2 gap-4 not-content">
-      <div>
-        <ReactCodeMirror
-          value={code}
-          height="200px"
-          onChange={(value) => setCode(value)}
-          onBlur={evaluateCode}
-          basicSetup={{
-            syntaxHighlighting: true,
-          }}
-          extensions={[javascript({ jsx: true, typescript: true })]}
-          theme={abyss}
-        />
-        <div>
-          <pre className="whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
-        </div>
-      </div>
+      <ReactCodeMirror
+        className="w-full"
+        value={code}
+        onChange={(value) => setCode(value)}
+        onBlur={evaluateCode}
+        basicSetup={{
+          syntaxHighlighting: true,
+        }}
+        extensions={[javascript({ jsx: true, typescript: true })]}
+        theme={abyss}
+      />
       {result && (
-        <div style={{ width: 600, height: 600 }}>
+        <div className="w-full h-[600px]">
           <Flow flow={result} />
         </div>
       )}
