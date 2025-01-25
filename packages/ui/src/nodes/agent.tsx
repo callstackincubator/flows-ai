@@ -1,5 +1,5 @@
-import { Handle, Node, NodeProps, Position } from '@xyflow/react'
-import { FlowDefinition } from 'flows-ai'
+import { Handle, type Node, type NodeProps, Position } from '@xyflow/react'
+import type { FlowDefinition } from 'flows-ai'
 
 /**
  * Custom generic node for all types of agents.
