@@ -39,7 +39,7 @@ export function Sandbox() {
   return (
     <div className="grid grid-cols-2 gap-4 not-content">
       <div>
-        <textarea value={code} onChange={(e) => setCode(e.target.value)} />
+        <textarea value={code} onChange={(e) => setCode(e.target.value)} onBlur={evaluateCode} />
         <div>
           <pre className="whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
         </div>
