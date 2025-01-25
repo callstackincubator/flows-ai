@@ -1,5 +1,4 @@
 import { Flow } from '@flows-ai/ui'
-import ReactCodeMirror from '@uiw/react-codemirror'
 import s from 'dedent'
 import { useEffect, useState } from 'react'
 
@@ -40,7 +39,7 @@ export function Sandbox() {
   return (
     <div className="grid grid-cols-2 gap-4 not-content">
       <div>
-        <ReactCodeMirror value={code} height="200px" />
+        <textarea value={code} onChange={(e) => setCode(e.target.value)} />
         <div>
           <pre className="whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
         </div>

@@ -64,11 +64,5 @@
       }
     }
   },
-  "version": "0.2.1",
-  "dependencies": {
-    "@uiw/react-codemirror": "^4.23.7"
-  },
-  "patchedDependencies": {
-    "@uiw/react-codemirror@4.23.7": "patches/@uiw%2Freact-codemirror@4.23.7.patch"
-  }
+  "version": "0.2.1"
 }

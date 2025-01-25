@@ -11,6 +11,7 @@
     "@monaco-editor/react": "^4.7.0-rc.0",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
+    "@uiw/codemirror-theme-abyss": "^4.23.7",
     "@uiw/react-codemirror": "^4.23.7",
     "astro": "^5.1.5",
     "mermaid": "^11.4.1",
