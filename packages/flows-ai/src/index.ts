@@ -196,27 +196,29 @@ export const makeOptimizeAgent: AgentFactory<EvaluatorFlowDefinition> =
       const evaluation = await generateObject({
         ...opts,
         system: s`
-          You are a criteria evaluator. You will be given a result and a criteria.
-          You will need to evaluate the result and return a boolean value.
+          You are a criteria validator.
+          Your only task is to check if the result matches the given criteria.
+          Do not analyze or describe what the result is.
+          Simply check if it satisfies the specified criteria.
         `,
         prompt: s`
-          Here is the result: ${JSON.stringify(result)}
-          Here is the criteria: ${JSON.stringify(criteria)}
+          Criteria to validate: ${JSON.stringify(criteria)}
+          Does this satisfy the criteria? ${JSON.stringify(result)}
         `,
-        schema: z.discriminatedUnion('type', [
-          z.object({ type: z.literal('pass') }),
-          z.object({
-            type: z.literal('fail'),
-            reason: z.string().describe('The reason why the result is not good.'),
-          }),
-        ]),
+        schema: z.object({
+          pass: z.boolean().describe('Whether the value satisfies the criteria.'),
+          reason: z
+            .string()
+            .optional()
+            .describe('If failed, provide a brief reason why the criteria was not met.'),
+        }),
       })
-      if (evaluation.object.type === 'pass') {
+      if (evaluation.object.pass) {
         return result
       }
       rejection_reason = evaluation.object.reason
     }
-    throw new Error('Max iterations reached')
+    throw new Error(rejection_reason)
   }
 
 /**

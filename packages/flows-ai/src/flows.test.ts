@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, mock } from 'bun:test'
 
-import { forEach, parallel, sequence } from './flows.js'
+import { evaluator, forEach, parallel, sequence } from './flows.js'
 import { type Agent, execute } from './index.js'
 
 const agent = mock<Agent>(async ({ input }) => input)
@@ -139,5 +139,51 @@ describe('forEach', () => {
     expect(item.mock.calls[0][1]).toEqual(['callstackincubator/foo'])
     expect(item.mock.calls[1][1]).toEqual(['callstackincubator/bar'])
     expect(item.mock.calls[2][1]).toEqual(['callstackincubator/baz'])
+  })
+})
+
+describe('evaluator', () => {
+  it('should throw an error if the criteria is not met', async () => {
+    const flow = evaluator({
+      input: {
+        agent: 'agent',
+        input: 'Quick brown fox jumped over lazy dog',
+      },
+      criteria: 'Must be at least 100 words',
+      max_iterations: 2,
+    })
+
+    expect(() =>
+      execute(flow, {
+        agents: {
+          agent,
+        },
+      })
+    ).toThrowError()
+  })
+  it('should re-run sub-flow until criteria is met', async () => {
+    const flow = evaluator({
+      input: {
+        agent: 'agent',
+        input: 'Write a short story about a cat',
+      },
+      criteria: 'The story must be about a cat named Fluffy',
+      max_iterations: 2,
+    })
+
+    agent.mockImplementation(async (_, context) => {
+      if (context.find((message) => message.includes('Fluffy'))) {
+        return 'This is a story about a cat named Fluffy'
+      }
+      return 'This is a story about a cat without a name'
+    })
+
+    const result = await execute(flow, {
+      agents: {
+        agent,
+      },
+    })
+
+    expect(result).toContain('Fluffy')
   })
 })
