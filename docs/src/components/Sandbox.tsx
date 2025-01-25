@@ -45,9 +45,9 @@ export function Sandbox() {
           onBlur={() => evaluateCode()}
           className="w-full h-64 font-mono p-2"
         />
-      </div>
-      <div>
-        <pre>{JSON.stringify(result, null, 2)}</pre>
+        <div>
+          <pre className="whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
+        </div>
       </div>
       {result && (
         <div style={{ width: 600, height: 600 }}>

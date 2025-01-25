@@ -4,15 +4,19 @@
   "dependencies": {
     "@astrojs/react": "^4.1.6",
     "@astrojs/starlight": "^0.31.1",
+    "@astrojs/starlight-tailwind": "^3.0.0",
+    "@astrojs/tailwind": "^5.1.5",
     "@expressive-code/plugin-collapsible-sections": "^0.40.1",
+    "@flows-ai/ui": "workspace:*",
+    "@monaco-editor/react": "^4.6.0",
     "@types/react": "^19.0.8",
     "@types/react-dom": "^19.0.3",
-    "@flows-ai/ui": "workspace:*",
     "astro": "^5.1.5",
     "mermaid": "^11.4.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "sharp": "^0.32.5"
+    "sharp": "^0.32.5",
+    "tailwindcss": "^3.4.17"
   },
   "private": true,
   "scripts": {

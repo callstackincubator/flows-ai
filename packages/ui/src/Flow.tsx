@@ -16,7 +16,7 @@ import {
 import { type FlowDefinition } from 'flows-ai'
 import { useEffect } from 'react'
 
-import AgentNode from './AgentNode.tsx'
+import AgentNode from './nodes/agent.tsx'
 
 const nodeTypes = {
   agent: AgentNode,
@@ -113,17 +113,17 @@ function generateNodesAndEdges(
 }
 
 function Flow({ flow }: { flow: FlowDefinition }) {
-  const { fitView, getNodes, getEdges } = useReactFlow()
+  const { fitView } = useReactFlow()
   const nodesInitialized = useNodesInitialized()
 
-  const { nodes: initialNodes, edges: initialEdges } = generateNodesAndEdges(flow)
+  const graph = generateNodesAndEdges(flow)
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges)
+  const [nodes, setNodes, onNodesChange] = useNodesState(graph.nodes)
+  const [edges, setEdges, onEdgesChange] = useEdgesState(graph.edges)
 
   useEffect(() => {
     if (nodesInitialized) {
-      const layouted = getLayoutedElements(getNodes(), getEdges(), 'TB')
+      const layouted = getLayoutedElements(nodes, edges, 'TB')
 
       setNodes([...layouted.nodes])
       setEdges([...layouted.edges])
@@ -133,6 +133,11 @@ function Flow({ flow }: { flow: FlowDefinition }) {
       })
     }
   }, [nodesInitialized])
+
+  useEffect(() => {
+    setNodes(graph.nodes)
+    setEdges(graph.edges)
+  }, [flow])
 
   return (
     <ReactFlow

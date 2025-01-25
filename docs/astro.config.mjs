@@ -1,6 +1,7 @@
 // @ts-check
 import react from '@astrojs/react'
 import starlight from '@astrojs/starlight'
+import tailwind from '@astrojs/tailwind'
 import { defineConfig } from 'astro/config'
 
 import { mermaid } from './src/plugins/mermaid'
@@ -13,11 +14,15 @@ export default defineConfig({
   },
   integrations: [
     react(),
+    tailwind({
+      applyBaseStyles: false,
+    }),
     starlight({
       title: 'Flows AI',
       social: {
         github: 'https://github.com/callstackincubator/flows-ai',
       },
+      customCss: ['./src/styles/base.css'],
       sidebar: [
         {
           label: 'Introduction',

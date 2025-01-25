@@ -4,12 +4,12 @@
   "type": "module",
   "exports": {
     "bun": "./src/index.ts",
-      "types": {
-        "import": "./dist/index.d.ts",
-        "require": "./dist/index.d.cts"
-      },
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.js"
+    "types": {
+      "import": "./dist/index.d.ts",
+      "require": "./dist/index.d.cts"
+    },
+    "require": "./dist/index.cjs",
+    "import": "./dist/index.js"
   },
   "scripts": {
     "prepare": "bun run build",
