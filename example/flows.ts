@@ -1,4 +1,5 @@
 import { forEach, oneOf, parallel, sequence } from 'flows-ai/flows'
+import { z } from 'zod'
 
 export const githubProjectHealthAnalysisFlow = sequence([
   {
@@ -12,7 +13,10 @@ export const githubProjectHealthAnalysisFlow = sequence([
     input: 'Go to Github and get the top 3 most popular issues and number of open issues.',
   },
   forEach({
-    item: 'Github issue and total number of open issues',
+    item: z.object({
+      issue: z.string().describe('The single issue title'),
+      openIssues: z.number().describe('The number of total open issues'),
+    }),
     input: parallel([
       oneOf([
         {

@@ -2,6 +2,8 @@
  * Helpers to create flow definitions for various flow types.
  */
 
+import type { ZodTypeAny } from 'zod'
+
 import { type FlowDefinition } from './index.js'
 
 export function sequence(input: FlowDefinition[], name?: string) {
@@ -38,7 +40,7 @@ export function evaluator(props: EvaluatorProps, name?: string) {
 
 type ForEachProps = {
   input: FlowDefinition
-  item: string
+  item: string | ZodTypeAny
 }
 
 export function forEach(props: ForEachProps, name?: string) {

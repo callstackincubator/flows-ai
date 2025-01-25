@@ -24,9 +24,9 @@ flowchart LR
 
 ### `item`
 
-**type:** `string`
+**type:** `ZodTypeAny` | `string`
 
-Description of each item in the collection to process.
+Zod schema that describes each item in the collection to process. For simple strings, you can also pass a string to describe the item.
 
 ### `input`
 
@@ -45,7 +45,10 @@ const processGithubIssuesFlow = sequence([
     input: 'Go to Github and get the top 3 most popular issues and number of open issues.',
   },
   forEach({
-    item: 'Github issue and total number of open issues',
+    item: z.object({
+      issue: z.string().describe('The single issue title'),
+      openIssues: z.number().describe('The number of total open issues'),
+    }),
     input: {
       agent: 'responseAgent',
       input: 'Send an email to the project maintainer.',

@@ -1,7 +1,7 @@
 import { openai } from '@ai-sdk/openai'
 import { generateObject, generateText, type LanguageModel } from 'ai'
 import s from 'dedent'
-import { z } from 'zod'
+import { z, type ZodTypeAny } from 'zod'
 
 import {
   type BestOfFlowDefinition,
@@ -165,6 +165,11 @@ export const makeOneOfAgent: AgentFactory<OneOfFlowDefinition> =
           .describe('The index of the condition that is met, or -1 if no condition was met.'),
       }),
     })
+    console.log(s`
+      Here is the context: ${JSON.stringify(context)}
+      Here is the array of conditions: ${JSON.stringify(conditions)}
+    `)
+    console.log(condition.object)
     const index = condition.object.index
     if (index === -1) {
       throw new Error('No condition was satisfied')
@@ -252,19 +257,18 @@ export const makeBestOfAllAgent: AgentFactory<BestOfFlowDefinition> =
 export const makeForEachAgent: AgentFactory<ForEachFlowDefinition> =
   (opts) =>
   async ({ input, item }, context) => {
+    const itemSchema = typeof item === 'string' ? z.string().describe(item) : (item as ZodTypeAny)
     const response = await generateObject({
       ...opts,
       system: s`
-        You are a loop agent. You will be given a list of items and a description.
+        You will be given a list of items.
         You will need to break the provided list into an array of items.
-        Each item must satisfy provided description.
       `,
       prompt: s`
-        Here are all the items: ${JSON.stringify(context.at(-1))}
-        Here is the description of what each item in the list should be: ${item}
+        Here is the list of items: ${JSON.stringify(context.at(-1))}
       `,
       schema: z.object({
-        items: z.array(z.string()).describe('The items to be executed.'),
+        items: z.array(itemSchema),
       }),
     })
     return await Promise.all(

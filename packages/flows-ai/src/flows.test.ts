@@ -117,7 +117,7 @@ describe('forEach', () => {
         agent: 'agent',
       },
       forEach({
-        item: 'project',
+        item: 'The project name',
         input: {
           agent: 'item',
           input: '',
