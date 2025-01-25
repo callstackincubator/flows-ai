@@ -1,4 +1,7 @@
+import { javascript } from '@codemirror/lang-javascript'
 import { Flow } from '@flows-ai/ui'
+import { abyss } from '@uiw/codemirror-theme-abyss'
+import ReactCodeMirror from '@uiw/react-codemirror'
 import s from 'dedent'
 import { useEffect, useState } from 'react'
 
@@ -21,7 +24,7 @@ export function Sandbox() {
     try {
       const blob = new Blob([code], { type: 'text/javascript' })
       const url = URL.createObjectURL(blob)
-      /* vite-ignore */
+
       const module = await import(/* @vite-ignore */ url)
       setResult(module.default)
 
@@ -39,7 +42,17 @@ export function Sandbox() {
   return (
     <div className="grid grid-cols-2 gap-4 not-content">
       <div>
-        <textarea value={code} onChange={(e) => setCode(e.target.value)} onBlur={evaluateCode} />
+        <ReactCodeMirror
+          value={code}
+          height="200px"
+          onChange={(value) => setCode(value)}
+          onBlur={evaluateCode}
+          basicSetup={{
+            syntaxHighlighting: true,
+          }}
+          extensions={[javascript({ jsx: true, typescript: true })]}
+          theme={abyss}
+        />
         <div>
           <pre className="whitespace-pre-wrap">{JSON.stringify(result, null, 2)}</pre>
         </div>

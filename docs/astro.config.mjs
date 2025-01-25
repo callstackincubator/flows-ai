@@ -9,7 +9,31 @@ import { mermaid } from './src/plugins/mermaid'
 export default defineConfig({
   vite: {
     resolve: {
+      /**
+       * @uiw/* packages are not compatible with ESM, as they do not import with `.js` extension.
+       * We're using source in TypeScript instead.
+       */
+      alias: {
+        '@uiw/react-codemirror': '@uiw/react-codemirror/src/index.tsx',
+        '@uiw/codemirror-extensions-basic-setup':
+          '@uiw/codemirror-extensions-basic-setup/src/index.ts',
+        '@uiw/codemirror-theme-abyss': '@uiw/codemirror-theme-abyss/src/index.ts',
+      },
       conditions: ['bun'],
+    },
+    optimizeDeps: {
+      /**
+       * We need to tell Vite to process @uiw/* and related packages, so we transpile them
+       * properly.
+       */
+      include: [
+        '@uiw/codemirror-extensions-basic-setup',
+        '@codemirror/state',
+        '@codemirror/view',
+        '@codemirror/language',
+        '@uiw/codemirror-theme-abyss',
+        '@codemirror/lang-javascript',
+      ],
     },
   },
   integrations: [
