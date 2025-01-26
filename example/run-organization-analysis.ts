@@ -6,10 +6,9 @@ import { organizationAnalysisFlow } from './flows'
 const orgName = process.argv[2]
 
 if (!orgName) {
-  console.error(
+  throw new Error(
     'Please provide an organization name, e.g.: bun run-organization-analysis.ts callstackincubator'
   )
-  process.exit(1)
 }
 
 /**

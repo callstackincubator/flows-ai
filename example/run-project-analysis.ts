@@ -6,10 +6,9 @@ import { githubProjectHealthAnalysisFlow } from './flows'
 const projectName = process.argv[2]
 
 if (!projectName) {
-  console.error(
+  throw new Error(
     'Please provide a project name, e.g.: bun run-project-analysis.ts facebook/react-native'
   )
-  process.exit(1)
 }
 
 /**

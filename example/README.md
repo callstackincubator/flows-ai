@@ -17,3 +17,8 @@ These examples use OpenAI and FireCrawl APIs. You need to have the following env
 
 - `bun run-organization-analysis.ts callstackincubator` - Analyzing an entire GitHub organization
 - `bun run-project-analysis.ts facebook/react-native` - Analyzing a single GitHub project
+- `bun run-organization-analysis-with-slack-message.ts callstackincubator` - Analyzing an entire GitHub organization and sending the report to Slack
+
+> [!NOTE]
+> In order to run Slack example, you need to have `SLACK_API_TOKEN` environment variable set.
+> You will also need to have `SLACK_CHANNEL_ID` environment variable set.
