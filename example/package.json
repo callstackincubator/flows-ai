@@ -1,12 +1,6 @@
 {
   "name": "@flows-ai/example",
   "private": true,
-  "devDependencies": {
-    "@clack/prompts": "^0.9.1",
-    "@cloudflare/workers-types": "^4.20250124.3",
-    "flows-ai": "workspace:*",
-    "wrangler": "^3.105.1"
-  },
   "scripts": {
     "dev": "wrangler dev ./cloudflare-worker.ts"
   },
@@ -24,5 +18,11 @@
     "@agentic/slack": "^7.2.0",
     "ky": "^1.7.4",
     "p-throttle": "^6.2.0"
+  },
+  "devDependencies": {
+    "@clack/prompts": "^0.9.1",
+    "@cloudflare/workers-types": "^4.20250124.3",
+    "flows-ai": "workspace:*",
+    "wrangler": "^3.105.1"
   }
 }
