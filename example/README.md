@@ -8,10 +8,18 @@ These examples use OpenAI and FireCrawl APIs. You need to have the following env
 - `OPENAI_API_KEY` - Your OpenAI API key
 - `FIRECRAWL_API_KEY` - Your FireCrawl API key for GitHub and NPM data access
 
+In order to run Slack example, you need to have `SLACK_API_TOKEN` and `SLACK_CHANNEL_ID` environment variables set.
+
+> [!NOTE]
+> FireCrawl requests are throttled to 10 requests per minute, as per the Free Plan, to avoid rate limiting.
+
 ## Structure
 
 - `flows.ts` - All flows are defined here
 - `agents.ts` - All agents are defined here
+
+> [!NOTE]
+> We're using [`Agentic`](https://github.com/agentic/agentic) to create agents.
 
 ## Running the examples
 
@@ -19,6 +27,3 @@ These examples use OpenAI and FireCrawl APIs. You need to have the following env
 - `bun run-project-analysis.ts facebook/react-native` - Analyzing a single GitHub project
 - `bun run-organization-analysis-with-slack-message.ts callstackincubator` - Analyzing an entire GitHub organization and sending the report to Slack
 
-> [!NOTE]
-> In order to run Slack example, you need to have `SLACK_API_TOKEN` environment variable set.
-> You will also need to have `SLACK_CHANNEL_ID` environment variable set.

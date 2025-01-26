@@ -1,10 +1,27 @@
 import { createAISDKTools } from '@agentic/ai-sdk'
+import { throttleKy } from '@agentic/core'
 import { FirecrawlClient } from '@agentic/firecrawl'
 import { SlackClient } from '@agentic/slack'
 import { openai } from '@ai-sdk/openai'
 import { agent } from 'flows-ai'
+import ky from 'ky'
+import pThrottle from 'p-throttle'
 
-const firecrawl = new FirecrawlClient()
+/**
+ * Let's throttle the Firecrawl client to 10 requests per minute,
+ * as per the Firecrawl Free Plan.
+ */
+const firecrawl = new FirecrawlClient({
+  ky: throttleKy(
+    ky,
+    pThrottle({
+      limit: 1,
+      interval: 6000,
+      strict: true,
+    })
+  ),
+})
+
 const slack = new SlackClient()
 
 export const githubAgent = agent({

@@ -24,9 +24,6 @@ const response = await execute(organizationAnalysisFlow, {
   onFlowStart: (flow) => {
     console.log('Executing', flow.agent.name)
   },
-  onFlowFinish: (flow, response) => {
-    console.log('Flow finished', flow.agent.name, response)
-  },
 })
 
 console.log(response)

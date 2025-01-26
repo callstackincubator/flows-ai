@@ -14,7 +14,10 @@
   },
   "dependencies": {
     "@agentic/ai-sdk": "^7.2.0",
+    "@agentic/core": "^7.2.0",
     "@agentic/firecrawl": "^7.2.0",
-    "@agentic/slack": "^7.2.0"
+    "@agentic/slack": "^7.2.0",
+    "ky": "^1.7.4",
+    "p-throttle": "^6.2.0"
   }
 }
