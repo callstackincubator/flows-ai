@@ -1,8 +1,7 @@
 import { execute } from 'flows-ai'
-import { sequence } from 'flows-ai/flows'
 
 import { githubAgent, slackAgent } from './agents'
-import { githubProjectHealthAnalysisFlow } from './flows'
+import { organizationAnalysisWithSlackMessageFlow } from './flows'
 
 const projectName = process.argv[2]
 
@@ -25,24 +24,15 @@ if (!channelId) {
  * In this example, we run already defined `githubProjectHealthAnalysisFlow`,
  * and then, we send the report to Slack.
  */
-const response = await execute(
-  sequence([
-    githubProjectHealthAnalysisFlow,
-    {
-      agent: 'slackAgent',
-      input: `Send the report to the channel "${channelId}"`,
-    },
-  ]),
-  {
-    agents: {
-      githubAgent,
-      slackAgent,
-    },
-    input: projectName,
-    onFlowStart: (flow) => {
-      console.log('Executing', flow.agent.name)
-    },
-  }
-)
+const response = await execute(organizationAnalysisWithSlackMessageFlow, {
+  agents: {
+    githubAgent,
+    slackAgent,
+  },
+  input: projectName,
+  onFlowStart: (flow) => {
+    console.log('Executing', flow.agent.name)
+  },
+})
 
 console.log(response)

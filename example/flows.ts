@@ -66,3 +66,14 @@ export const organizationAnalysisFlow = sequence([
       'Create an organization-wide summary analyzing patterns and insights across all projects.',
   },
 ])
+
+/**
+ * Same as `organizationAnalysisFlow`, but with Slack message at the end.
+ */
+export const organizationAnalysisWithSlackMessageFlow = sequence([
+  organizationAnalysisFlow,
+  {
+    agent: 'slackAgent',
+    input: `Send the report to the channel "${process.env['SLACK_CHANNEL_ID']}"`,
+  },
+])
