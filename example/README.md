@@ -34,7 +34,7 @@ We also provide a Cloudflare Worker example.
 To run it, you need to have the `wrangler` CLI installed.
 
 ```bash
-wrangler dev
+bun dev
 ```
 
 This will start the worker and you can see the logs in the console.
