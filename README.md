@@ -8,11 +8,18 @@ A lightweight, type-safe AI workflow orchestrator inspired by Anthropic's agent 
 npm install flows-ai
 ```
 
+What to do next?
+
+- Read our [docs](https://flows-ai.callstack.com) for more information.
+- Check our [examples](./example/README.md) to see how you can use Flows AI.
+
 ## Motivation
 
 Last year, we built Fabrice - an AI agent framework designed to break down complex tasks into smaller steps. We realized that AI agent systems today are essentially modern workflows where each node is an LLM call instead of a traditional function. The key difference lies not in the framework, but in the nature of these nodes: they have flexible input/output contracts.
 
-This insight led us to redefine our approach and focus on an orchestration, so you can connect different (often incompatible input/outputs) together. This library provides a simple, more deterministic way to build AI workflows. You can either explicitly define your workflow with loops and conditionals, or use an orchestrator agent to dynamically break down complex tasks. 
+This insight led us to redefine our approach and focus on an orchestration, so you can connect different (often incompatible input/outputs) together. 
+
+This library provides a simple, more deterministic way to build AI workflows. You can either explicitly define your workflow with loops and conditionals, or use an orchestrator agent to dynamically break down complex tasks. 
 
 On top of that, we keep our library simple and functional, without any classes or state.
 
@@ -54,9 +61,7 @@ execute(translateFlow, {
 })
 ```
 
-In this example, we will first translate the text to English and then summarize it.
-
-Learn more about this and other flows in our [docs](./docs/src/content/docs/index.mdx).
+Learn more about this and other flows in our [docs](https://flows-ai.callstack.com).
 
 ## License
 
