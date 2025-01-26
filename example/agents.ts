@@ -32,5 +32,4 @@ export const analysisAgent = agent({
     You combine and analyze data from multiple sources to create meaningful summaries.
     Focus on identifying patterns, trends, and key insights.
   `,
-  tools: createAISDKTools(firecrawl),
 })
