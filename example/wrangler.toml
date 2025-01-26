@@ -1,0 +1,11 @@
+name = "run-organization-analysis-with-slack-message"
+account_id = "509f0d5925f8d9fa1d5bfb6c110a7f03"
+workers_dev = true
+compatibility_date = "2025-01-26"
+compatibility_flags = [ "nodejs_compat" ]
+
+[triggers]
+crons = ["0 8 * * 2"]
+
+[observability]
+enabled = true

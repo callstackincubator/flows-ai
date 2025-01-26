@@ -176,3 +176,7 @@ dist
 
 # Astro
 .astro
+
+# Cloudflare
+.wrangler
+.dev.vars

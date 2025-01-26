@@ -3,7 +3,12 @@
   "private": true,
   "devDependencies": {
     "@clack/prompts": "^0.9.1",
-    "flows-ai": "workspace:*"
+    "@cloudflare/workers-types": "^4.20250124.3",
+    "flows-ai": "workspace:*",
+    "wrangler": "^3.105.1"
+  },
+  "scripts": {
+    "dev": "wrangler dev ./cloudflare-worker.ts"
   },
   "author": "Mike Grabowski <grabbou@gmail.com>",
   "license": "MIT",

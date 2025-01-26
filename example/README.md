@@ -27,3 +27,14 @@ In order to run Slack example, you need to have `SLACK_API_TOKEN` and `SLACK_CHA
 - `bun run-project-analysis.ts facebook/react-native` - Analyzing a single GitHub project
 - `bun run-organization-analysis-with-slack-message.ts callstackincubator` - Analyzing an entire GitHub organization and sending the report to Slack
 
+## Cloudflare Worker
+
+We also provide a Cloudflare Worker example.
+
+To run it, you need to have the `wrangler` CLI installed.
+
+```bash
+wrangler dev
+```
+
+This will start the worker and you can see the logs in the console.
