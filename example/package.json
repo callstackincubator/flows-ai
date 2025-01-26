@@ -11,5 +11,9 @@
     "type": "git",
     "url": "git+https://github.com/callstackincubator/workflows-ai.git",
     "directory": "example"
+  },
+  "dependencies": {
+    "@agentic/ai-sdk": "^7.2.0",
+    "@agentic/firecrawl": "^7.2.0"
   }
 }

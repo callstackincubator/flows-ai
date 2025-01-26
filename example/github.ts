@@ -1,86 +1,69 @@
+/**
+ * Example of a very simple flow that analyzes the health of a Github project.
+ *
+ * To run this example, you will need to have `FIRECRAWL_API_KEY` configured in your environment.
+ */
+
+import { createAISDKTools } from '@agentic/ai-sdk'
+import { FirecrawlClient } from '@agentic/firecrawl'
 import { openai } from '@ai-sdk/openai'
-import { tool } from 'ai'
 import { agent, execute } from 'flows-ai'
-import z from 'zod'
-
-import { githubProjectHealthAnalysisFlow } from './flows'
-
-const communicationAgent = agent({
-  model: openai('gpt-4o'),
-  system: `
-    You are a communication agent.
-    You need to send a message to the given receipient.
-
-    For project maintainers, you send emails to: "opensource@callstack.com".
-  `,
-  tools: {
-    sendEmail: tool({
-      parameters: z.object({
-        message: z.string().describe('The message to send'),
-        to: z.string().describe('The email address to send the message to'),
-      }),
-      execute: async ({ message, to }) => {
-        return `Email sent: ${message} to ${to}`
-      },
-    }),
-  },
-})
+import { forEach, sequence } from 'flows-ai/flows'
+import { z } from 'zod'
 
 /**
- * This agent takes a Github project name as input and task to perform.
+ * First, we define the flow.
+ */
+const githubProjectHealthAnalysisFlow = sequence([
+  {
+    agent: 'githubAgent',
+    name: 'getIssues',
+    input: 'Get top 10 open issues with most "thumbs down" reactions',
+  },
+  forEach({
+    item: z.object({
+      title: z.string().describe('The issue title'),
+      url: z.string().describe('The URL of the issue'),
+    }),
+    input: sequence([
+      {
+        agent: 'githubAgent',
+        input: 'Analyze the issue carefuly and extract the root cause',
+      },
+    ]),
+  }),
+  {
+    agent: 'githubAgent',
+    input: 'Extract common patterns (if any) amongst all open issues, based on provided summaries.',
+  },
+])
+
+const firecrawl = new FirecrawlClient()
+
+/**
+ * Next, we define the agent. It's a simple agent that has access to the Github via Firecrawl.
  */
 const githubAgent = agent({
   model: openai('gpt-4o-mini'),
   system: `
     You are a Github agent.
     You are given a Github project name and an instruction to perform.
-    You will scrape the data from Github and return the result.
+    You can scrape the data from Github and return the result.
   `,
-  tools: {
-    scrapeTool: tool({
-      parameters: z.object({
-        url: z.string().describe('The url to scrape'),
-      }),
-      execute: async () => {
-        return `<html><div>Open issues: 10000</div>, Top 3 issues: <ul><li>Issue 1</li><li>Issue 2</li><li>Issue 3</li></ul></html>`
-      },
-    }),
-  },
+  tools: createAISDKTools(firecrawl),
 })
 
 /**
- * This agent takes simple text as input
+ * Finally, we execute the flow for "facebook/react-native" project.
  */
-const userInputAgent = agent({
-  model: openai('gpt-4o-mini'),
-  system: 'You are given a prompt and you need to return the user input.',
-  tools: {
-    askQuestion: tool({
-      parameters: z.object({
-        message: z.string().describe('The question to ask the user'),
-      }),
-      execute: async ({ message }) => {
-        const { text } = await import('@clack/prompts')
-        return text({
-          message,
-        })
-      },
-    }),
-  },
-})
-
 const response = await execute(githubProjectHealthAnalysisFlow, {
   agents: {
-    userInputAgent,
     githubAgent,
-    communicationAgent,
   },
+  input: 'facebook/react-native',
   onFlowStart: (flow) => {
-    console.log('Flow started', flow.agent.name)
-    if (flow.agent.name) {
-      console.log('Executing', flow.agent.name)
-    }
+    console.log('Executing', flow.agent.name)
   },
 })
 
-console.log('Received response', response)
+console.log(response)
