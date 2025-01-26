@@ -1,4 +1,5 @@
-import { forEach, parallel, sequence } from 'flows-ai/flows'
+import s from 'dedent'
+import { forEach, oneOf, parallel, sequence } from 'flows-ai/flows'
 import { z } from 'zod'
 
 /**
@@ -75,5 +76,50 @@ export const organizationAnalysisWithSlackMessageFlow = sequence([
   {
     agent: 'slackAgent',
     input: `Send the report to the channel "${process.env['SLACK_CHANNEL_ID']}"`,
+  },
+])
+
+/**
+ * Flow for analyzing newsletter content and creating summaries
+ */
+export const newsletterSummaryFlow = sequence([
+  {
+    agent: 'contentAgent',
+    input: s`
+      Extract all links from the provided newsletter URL.
+      For each link, determine if it is an article (📜) or release (📦).
+      Return first 5 links with URL whose type is either "article" or "release".
+      Skip any links that point to "x.com" or "twitter.com".
+    `,
+  },
+  forEach({
+    item: z.object({
+      url: z.string().describe('The URL of the content'),
+      type: z.enum(['article', 'release']).describe('The type of content'),
+    }),
+    input: oneOf([
+      {
+        when: 'It is an article',
+        input: {
+          agent: 'contentAgent',
+          input: 'Create a bullet-point summary of the key points from this article.',
+        },
+      },
+      {
+        when: 'It is a release',
+        input: {
+          agent: 'contentAgent',
+          input:
+            'Analyze the release notes, identify any breaking changes, and highlight the most important new feature.',
+        },
+      },
+    ]),
+  }),
+  {
+    agent: 'slackAgent',
+    input: s`
+      Send all summaries to the channel "${process.env['SLACK_CHANNEL_ID']}".
+      The message must start with the newsletter issue number.
+    `,
   },
 ])

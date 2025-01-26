@@ -49,7 +49,6 @@ export const slackAgent = agent({
   system: `
     You are a Slack agent.
     You can send messages to Slack.
-    Your messages should be concise and to the point.
     You always start with a friendly greeting in a casual, developer-friendly tone.
   `,
   tools: createAISDKTools(slack),
@@ -62,4 +61,14 @@ export const analysisAgent = agent({
     You combine and analyze data from multiple sources to create meaningful summaries.
     Focus on identifying patterns, trends, and key insights.
   `,
+})
+
+export const contentAgent = agent({
+  model: openai('gpt-4o'),
+  system: `
+    You are a content analysis agent.
+    You can analyze web content and extract information from it.
+    Your summaries are clear, focused, and highlight what's most relevant for developers.
+  `,
+  tools: createAISDKTools(firecrawl),
 })

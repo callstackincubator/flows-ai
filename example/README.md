@@ -26,6 +26,7 @@ In order to run Slack example, you need to have `SLACK_API_TOKEN` and `SLACK_CHA
 - `bun run-organization-analysis.ts callstackincubator` - Analyzing an entire GitHub organization
 - `bun run-project-analysis.ts facebook/react-native` - Analyzing a single GitHub project
 - `bun run-organization-analysis-with-slack-message.ts callstackincubator` - Analyzing an entire GitHub organization and sending the report to Slack
+- `bun run-newsletter-analysis.ts` - Summarizing the "This Week in React" newsletter content and sending it to Slack
 
 ## Cloudflare Worker
 

@@ -11,10 +11,6 @@ if (!projectName) {
   )
 }
 
-if (!process.env['SLACK_API_TOKEN']) {
-  throw new Error('Please set SLACK_API_TOKEN environment variable.')
-}
-
 const channelId = process.env['SLACK_CHANNEL_ID']
 if (!channelId) {
   throw new Error('Please set SLACK_CHANNEL_ID environment variable.')
