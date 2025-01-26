@@ -45,6 +45,9 @@ export type FlowDefinition = {
    */
   input: FlowDefinition | FlowDefinition[] | string
   /**
+   * Structured output for the flow.
+   */
+  /**
    * Optional name of the flow.
    */
   name?: string
