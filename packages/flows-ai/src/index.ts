@@ -271,9 +271,11 @@ export const makeForEachAgent: AgentFactory<ForEachFlowDefinition> =
         items: z.array(itemSchema),
       }),
     })
-    return await Promise.all(
-      response.object.items.map((item) => input.agent(input, [...context.slice(0, -1), item]))
-    )
+    const results = []
+    for await (const item of response.object.items) {
+      results.push(await input.agent(input, [...context.slice(0, -1), item]))
+    }
+    return results
   }
 
 type ExecuteOptions = {
