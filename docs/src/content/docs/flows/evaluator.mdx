@@ -39,9 +39,9 @@ Maximum number of iterations to attempt improvement.
 ## Example
 
 ```ts collapse={12-40}
-import { evaluate } from 'flows-ai/flows'
+import { evaluator } from 'flows-ai/flows'
 
-const optimizeFlow = evaluate({
+const optimizeFlow = evaluator({
   input: {
     agent: 'writingAgent',
     input: 'Write a compelling story'
